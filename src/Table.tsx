@@ -3,7 +3,7 @@ import React from "react";
 export interface TableProps {
   // Später erweiterbar für spezielle Anforderungen
   columns: string[];
-  data: Array<Record<string, string>>;
+  data: Array<Record<string, string | number>>;
 }
 
 export const Table: React.FC<TableProps> = ({ columns, data }) => {
