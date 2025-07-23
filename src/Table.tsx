@@ -21,7 +21,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({ columns, r
   const scrollBodyRef = React.useRef<HTMLDivElement>(null)
 
   const [firstRenderedIndex, setFirstRenderedIndex] = React.useState(0);
-  const [rowCountToRender, setRowCountToRender] = React.useState(0);
+  const [rowCountToRender, setRowCountToRender] = React.useState(1);
   React.useLayoutEffect(() => {
     const container = scrollContainerRef.current;
     if (container) {
@@ -31,19 +31,28 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({ columns, r
   React.useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
+    let ticking = false;
     const handleScroll = () => {
-      const virtualFirstIndex = Math.floor(container.scrollTop / lineHeight) - rowVirtualizationMargin
-      const firstIndex = Math.max(virtualFirstIndex, 0);
-      const lastIndex = Math.min(virtualFirstIndex + Math.ceil(container.clientHeight / lineHeight) + 2 * rowVirtualizationMargin, rowCount)
-      setFirstRenderedIndex(firstIndex)
-      setRowCountToRender(lastIndex - firstIndex)
-    }
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const virtualFirstIndex = Math.floor(container.scrollTop / lineHeight) - rowVirtualizationMargin;
+          const firstIndex = Math.max(virtualFirstIndex, 0);
+          const lastIndex = Math.min(
+            virtualFirstIndex + Math.ceil(container.clientHeight / lineHeight) + 2 * rowVirtualizationMargin,
+            rowCount
+          );
+          setFirstRenderedIndex(firstIndex);
+          setRowCountToRender(lastIndex - firstIndex);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
     container.addEventListener('scroll', handleScroll);
-
     return () => {
       container.removeEventListener('scroll', handleScroll);
-    }
-  }, []);
+    };
+  }, [lineHeight, rowVirtualizationMargin, rowCount]);
 
   React.useEffect(() => {
     onRowRangeChange?.(firstRenderedIndex, firstRenderedIndex + rowCountToRender - 1, rowCountToRender)
