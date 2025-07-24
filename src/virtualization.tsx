@@ -15,7 +15,7 @@ export function useVirtualRows<TableRow extends TableRowBase>(
   React.useLayoutEffect(() => {
     const container = scrollContainerRef.current;
     if (container) {
-      setRowCountToRender(Math.ceil(container.clientHeight / lineHeight) + rowVirtualizationMargin);
+      setRowCountToRender(Math.min(Math.ceil(container.clientHeight / lineHeight) + rowVirtualizationMargin, rowCount));
     }
   }, []);
   React.useEffect(() => {
