@@ -4,13 +4,15 @@ import { useVirtualRows } from "./virtualization";
 export type TableRowBase = { index: number, children?: TableRowBase[] }
 export type TableSceletonRow = { __sceleton_row: true }
 
+type ExpandedRows = { [rowId: number]: true }
+
 function isDataRow<TableRow extends TableRowBase>(row: TableRow | TableSceletonRow): row is TableRow {
   return !(row as TableSceletonRow).__sceleton_row;
 }
 
-function getExpandedChildCount(rows: TableRowBase[], defaultExpansionDepth?: number): number {
+function getExpandedChildCount(rows: TableRowBase[], defaultExpansionDepth: number | undefined, expansions: ExpandedRows): number {
   if (defaultExpansionDepth === 0) return rows.length;
-  return rows.reduce((pre, cur) => cur.children?.length ? pre + getExpandedChildCount(cur.children, defaultExpansionDepth && defaultExpansionDepth - 1) : pre, rows.length)
+  return rows.reduce((pre, cur) => cur.children?.length ? pre + getExpandedChildCount(cur.children, defaultExpansionDepth && defaultExpansionDepth - 1, expansions) : pre, rows.length)
 }
 
 export interface TableProps<TableRow extends TableRowBase> {
@@ -32,11 +34,15 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   rowVirtualizationMargin = 5,
   defaultExpansionDepth
 }: TableProps<TableRow>) => {
+  const expansions = React.useRef<ExpandedRows>({})
   const treeState = React.useRef(rows.reduce(
-    (state, cur) => cur.children?.length ? state.concat({ index: cur.index, childCount: getExpandedChildCount(cur.children, defaultExpansionDepth && defaultExpansionDepth - 1) }) : state,
+    (state, cur) => cur.children?.length ? state.concat({ index: cur.index, childCount: getExpandedChildCount(cur.children, defaultExpansionDepth && defaultExpansionDepth - 1, expansions.current) }) : state,
     [] as { index: number, childCount: number }[]
   ))
   // - Flache Liste erzeugen
+
+
+
   // - Auf- & Zuklappen
   // - requested Range anpassen
   // - treeState updaten wenn Unstimmigkeit bemerkt
