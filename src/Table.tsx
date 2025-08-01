@@ -39,13 +39,13 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
     (state, cur) => cur.children?.length ? state.concat({ index: cur.index, childCount: getExpandedChildCount(cur.children, defaultExpansionDepth && defaultExpansionDepth - 1, expansions.current) }) : state,
     [] as { index: number, childCount: number }[]
   ))
-  // - Flache Liste erzeugen
+  // - Generate flat list
 
 
 
-  // - Auf- & Zuklappen
-  // - requested Range anpassen
-  // - treeState updaten wenn Unstimmigkeit bemerkt
+  // - Expand & collapse handling
+  // - Adjust requested range
+  // - Update treeState when inconsistency detected
   console.log(treeState.current)
 
   const { scrollContainerRef, firstRenderedIndex, preparedRows } = useVirtualRows(rows, rowCount, lineHeight, rowVirtualizationMargin, onRowRangeChange);
