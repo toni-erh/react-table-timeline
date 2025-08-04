@@ -1,18 +1,30 @@
 import React from "react";
 import { useVirtualRows } from "./virtualization";
 
-export type TableRowBase = { index: number, children?: TableRowBase[] }
+export type TableRowBase = { index: number, id: string, children?: TableRowBase[] }
 export type TableSceletonRow = { __sceleton_row: true }
 
-type ExpandedRows = { [rowId: number]: true }
+type ExpandedRows = { [rowId: number]: ExpandedRows }
 
 function isDataRow<TableRow extends TableRowBase>(row: TableRow | TableSceletonRow): row is TableRow {
   return !(row as TableSceletonRow).__sceleton_row;
 }
 
-function getExpandedChildCount(rows: TableRowBase[], defaultExpansionDepth: number | undefined, expansions: ExpandedRows): number {
-  if (defaultExpansionDepth === 0) return rows.length;
-  return rows.reduce((pre, cur) => cur.children?.length ? pre + getExpandedChildCount(cur.children, defaultExpansionDepth && defaultExpansionDepth - 1, expansions) : pre, rows.length)
+function getInitialExpansions(rows: TableRowBase[], defaultExpansionDepth: number | undefined): ExpandedRows {
+ return rows.reduce((state, cur) => {
+   if (defaultExpansionDepth === 0) return state;
+   if (cur.children?.length) state[cur.index] = getInitialExpansions(cur.children, defaultExpansionDepth && defaultExpansionDepth - 1);
+   return state;
+ }, {} as ExpandedRows)
+}
+
+
+function getExpandedChildCount(rows: TableRowBase[], expansions: ExpandedRows | undefined): number {
+  return expansions ? rows.reduce((pre, cur) => cur.children?.length ? pre + getExpandedChildCount(cur.children, expansions[cur.index]) : pre, rows.length) : 0
+}
+
+function flattenExpanded(row: TableRowBase, expansions: ExpandedRows | undefined): TableRowBase[] {
+  return expansions ? [row, ...(row.children?.flatMap((child) => flattenExpanded(child, expansions[child.index])) || [])] : [row]
 }
 
 export interface TableProps<TableRow extends TableRowBase> {
@@ -34,21 +46,33 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   rowVirtualizationMargin = 5,
   defaultExpansionDepth
 }: TableProps<TableRow>) => {
-  const expansions = React.useRef<ExpandedRows>({})
+  // For tracking which rows are expanded
+  const expansions = React.useRef(getInitialExpansions(rows, defaultExpansionDepth));
+
+  // For easy counting of rows before and after visible rows
   const treeState = React.useRef(rows.reduce(
-    (state, cur) => cur.children?.length ? state.concat({ index: cur.index, childCount: getExpandedChildCount(cur.children, defaultExpansionDepth && defaultExpansionDepth - 1, expansions.current) }) : state,
+    (state, cur) => cur.children?.length ? state.concat({ 
+      index: cur.index, 
+      childCount: getExpandedChildCount(cur.children, expansions.current[cur.index]) 
+    }) : state,
     [] as { index: number, childCount: number }[]
   ))
-  // - Generate flat list
+  const expandedRowCount = React.useMemo(() => {
+    return rowCount + treeState.current.reduce((pre, cur) => pre + cur.childCount, 0)
+  }, [treeState.current])
 
+  // flattens the rows with expanded children
+  const flatRows = React.useMemo(() => {
+    return rows.flatMap((row) => flattenExpanded(row, expansions.current[row.index]))
+  }, [rows, expansions.current])
 
 
   // - Expand & collapse handling
   // - Adjust requested range
   // - Update treeState when inconsistency detected
-  console.log(treeState.current)
+  console.log(expandedRowCount, expansions.current, treeState.current, flatRows)
 
-  const { scrollContainerRef, firstRenderedIndex, preparedRows } = useVirtualRows(rows, rowCount, lineHeight, rowVirtualizationMargin, onRowRangeChange);
+  const { scrollContainerRef, firstRenderedIndex, preparedRows } = useVirtualRows(flatRows, expandedRowCount, lineHeight, rowVirtualizationMargin, onRowRangeChange);
   const [leftWidth, setLeftWidth] = React.useState(300);
   const [isResizing, setIsResizing] = React.useState(false);
 
@@ -71,15 +95,16 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
 
   return (
     <div style={{ height: '100%', position: 'relative' }}>
-      <div style={{ height: `${lineHeight}px` }}>
+      <div style={{ height: `${lineHeight}px`, width: leftWidth, display: 'flex', alignItems: 'center' }}>
         {columns.map((col) => (
-          <div key={col}>{col}</div>
+          <div style={{ flex: 1, padding: '0 5px' }} key={col}>{col}</div>
         ))}
       </div>
       <div ref={scrollContainerRef} style={{ overflowY: 'auto', height: `calc(100% - ${lineHeight}px)`, display: 'flex' }}>
         {/* Linke Seite */}
         <div style={{
-          height: `${(rowCount - firstRenderedIndex + treeState.current.reduce((pre, cur) => cur.index >= firstRenderedIndex ? pre + cur.childCount : pre, 0)) * lineHeight}px`,
+          // TODO: make lazy loading process the tree information
+          height: `${(expandedRowCount - firstRenderedIndex + treeState.current.reduce((pre, cur) => cur.index >= firstRenderedIndex ? pre + cur.childCount : pre, 0)) * lineHeight}px`,
           paddingTop: `${firstRenderedIndex * lineHeight}px`,
           width: leftWidth,
           minWidth: 50,
@@ -88,7 +113,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
         }}>
           {preparedRows.map((row, index) =>
             isDataRow(row) ? (
-              <div key={row.index} style={{ height: `${lineHeight}px`, display: 'flex', alignItems: 'center' }}>
+              <div key={row.id} style={{ height: `${lineHeight}px`, display: 'flex', alignItems: 'center' }}>
                 {columns.map((col) => (
                   <div key={col} style={{ flex: 1, padding: '0 5px' }}>
                     {col in row ? (row[col as keyof typeof row] as React.ReactNode) : null}
@@ -103,7 +128,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
         {/* Rechte Seite */}
         <div
           style={{
-            height: `${(rowCount - firstRenderedIndex) * lineHeight}px`,
+            height: `${(expandedRowCount - firstRenderedIndex) * lineHeight}px`,
             paddingTop: `${firstRenderedIndex * lineHeight}px`,
             width: `calc(100% - ${leftWidth}px)`,
             overflowX: 'auto',
