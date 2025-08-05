@@ -25,9 +25,9 @@ export default function Playground() {
       <div style={{ padding: 16, border: "3px solid #ccc", borderRadius: 8, height: 400 }}>
         <Table
           columns={columns} rows={rows} rowCount={rows.length}
-        // onRowRangeChange={(first, last, count) => {
-        //   console.log(`Visible rows: ${first} - ${last} (${count})`);
-        // }}
+          onRowRangeChange={(requestedRows) => {
+            console.log(requestedRows)
+          }}
         />
       </div>
     </div>

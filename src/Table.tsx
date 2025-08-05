@@ -1,29 +1,30 @@
 import React from "react";
-import { useVirtualRows } from "./virtualization";
+import { useVirtualRows, type RequestedRows } from "./virtualization";
 
 export type TableRowBase = { index: number, id: string, children?: TableRowBase[] }
 export type TableSceletonRow = { __sceleton_row: true }
 
-type ExpandedRows = { [rowId: number]: ExpandedRows }
+export type RowExpansions = { [rowId: number]: RowExpansions }
+export type ExpandedChildCounts = { index: number, childCount: number }[]
 
 function isDataRow<TableRow extends TableRowBase>(row: TableRow | TableSceletonRow): row is TableRow {
   return !(row as TableSceletonRow).__sceleton_row;
 }
 
-function getInitialExpansions(rows: TableRowBase[], defaultExpansionDepth: number | undefined): ExpandedRows {
+function getInitialExpansions(rows: TableRowBase[], defaultExpansionDepth: number | undefined): RowExpansions {
  return rows.reduce((state, cur) => {
    if (defaultExpansionDepth === 0) return state;
    if (cur.children?.length) state[cur.index] = getInitialExpansions(cur.children, defaultExpansionDepth && defaultExpansionDepth - 1);
    return state;
- }, {} as ExpandedRows)
+ }, {} as RowExpansions)
 }
 
 
-function getExpandedChildCount(rows: TableRowBase[], expansions: ExpandedRows | undefined): number {
+function getExpandedChildCount(rows: TableRowBase[], expansions: RowExpansions | undefined): number {
   return expansions ? rows.reduce((pre, cur) => cur.children?.length ? pre + getExpandedChildCount(cur.children, expansions[cur.index]) : pre, rows.length) : 0
 }
 
-function flattenExpanded(row: TableRowBase, expansions: ExpandedRows | undefined): TableRowBase[] {
+function flattenExpanded(row: TableRowBase, expansions: RowExpansions | undefined): TableRowBase[] {
   return expansions ? [row, ...(row.children?.flatMap((child) => flattenExpanded(child, expansions[child.index])) || [])] : [row]
 }
 
@@ -31,7 +32,7 @@ export interface TableProps<TableRow extends TableRowBase> {
   columns: string[];
   rows: Array<TableRow>;
   rowCount: number;
-  onRowRangeChange?: (firstRow: number, lastRow: number, rowCount: number) => void;
+  onRowRangeChange?: (requestedRows: RequestedRows) => void;
   lineHeight?: number;
   rowVirtualizationMargin?: number;
   defaultExpansionDepth?: number;
@@ -47,32 +48,40 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   defaultExpansionDepth
 }: TableProps<TableRow>) => {
   // For tracking which rows are expanded
-  const expansions = React.useRef(getInitialExpansions(rows, defaultExpansionDepth));
+  const rowExpansions = React.useRef<RowExpansions>(getInitialExpansions(rows, defaultExpansionDepth));
 
   // For easy counting of rows before and after visible rows
-  const treeState = React.useRef(rows.reduce(
+  const expandedChildCounts = React.useRef<ExpandedChildCounts>(rows.reduce(
     (state, cur) => cur.children?.length ? state.concat({ 
       index: cur.index, 
-      childCount: getExpandedChildCount(cur.children, expansions.current[cur.index]) 
+      childCount: getExpandedChildCount(cur.children, rowExpansions.current[cur.index]) 
     }) : state,
-    [] as { index: number, childCount: number }[]
+    [] as ExpandedChildCounts
   ))
   const expandedRowCount = React.useMemo(() => {
-    return rowCount + treeState.current.reduce((pre, cur) => pre + cur.childCount, 0)
-  }, [treeState.current])
+    return rowCount + expandedChildCounts.current.reduce((pre, cur) => pre + cur.childCount, 0)
+  }, [expandedChildCounts.current])
 
   // flattens the rows with expanded children
   const flatRows = React.useMemo(() => {
-    return rows.flatMap((row) => flattenExpanded(row, expansions.current[row.index]))
-  }, [rows, expansions.current])
+    return rows.flatMap((row) => flattenExpanded(row, rowExpansions.current[row.index]))
+  }, [rows, rowExpansions.current])
 
 
   // - Expand & collapse handling
   // - Adjust requested range
   // - Update treeState when inconsistency detected
-  console.log(expandedRowCount, expansions.current, treeState.current, flatRows)
+  console.log(expandedRowCount, rowExpansions.current, expandedChildCounts.current, flatRows)
 
-  const { scrollContainerRef, firstRenderedIndex, preparedRows } = useVirtualRows(flatRows, expandedRowCount, lineHeight, rowVirtualizationMargin, onRowRangeChange);
+  const { scrollContainerRef, firstRenderedIndex, preparedRows } = useVirtualRows(
+    flatRows,
+    expandedRowCount,
+    lineHeight,
+    rowVirtualizationMargin,
+    expandedChildCounts.current,
+    rowExpansions.current,
+    onRowRangeChange
+  );
   const [leftWidth, setLeftWidth] = React.useState(300);
   const [isResizing, setIsResizing] = React.useState(false);
 
@@ -101,10 +110,9 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
         ))}
       </div>
       <div ref={scrollContainerRef} style={{ overflowY: 'auto', height: `calc(100% - ${lineHeight}px)`, display: 'flex' }}>
-        {/* Linke Seite */}
         <div style={{
           // TODO: make lazy loading process the tree information
-          height: `${(expandedRowCount - firstRenderedIndex + treeState.current.reduce((pre, cur) => cur.index >= firstRenderedIndex ? pre + cur.childCount : pre, 0)) * lineHeight}px`,
+          height: `${(expandedRowCount - firstRenderedIndex + expandedChildCounts.current.reduce((pre, cur) => cur.index >= firstRenderedIndex ? pre + cur.childCount : pre, 0)) * lineHeight}px`,
           paddingTop: `${firstRenderedIndex * lineHeight}px`,
           width: leftWidth,
           minWidth: 50,
@@ -125,7 +133,6 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
             )
           )}
         </div>
-        {/* Rechte Seite */}
         <div
           style={{
             height: `${(expandedRowCount - firstRenderedIndex) * lineHeight}px`,
@@ -138,7 +145,6 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
         >
         </div>
       </div>
-      {/* Resizer - jetzt außerhalb des scrollbaren Bereichs, immer sichtbar */}
       <div
         style={{
           width: 6,
