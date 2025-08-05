@@ -53,7 +53,7 @@ export function useVirtualRows<TableRow extends TableRowBase>(
           setFirstRenderedIndex(firstFlatIndex);
           setRowCountToRender(lastFlatIndex - firstFlatIndex);
           setFirstRealIndex(firstRealIndex);
-          setLastRealIndex(endIndex);
+          setLastRealIndex(Math.min(endIndex, rowCount));
           setOffsetToFirstRealIndex(offset);
           ticking = false;
         });
@@ -71,7 +71,7 @@ export function useVirtualRows<TableRow extends TableRowBase>(
     onRowRangeChange?.({
       firstFirstLevelIndex: firstRealIndex,
       lastFirstLevelIndex: lastRealIndex,
-      firstLevelRowCount: rowCountToRender,
+      firstLevelRowCount: lastRealIndex - firstRealIndex,
       rowExpansions,
     })
   }, [firstRenderedIndex, rowCountToRender])
@@ -162,5 +162,5 @@ function getFirstLevelIndexAndOffset(flatIndex: number, expandedChildCounts: Exp
     return pre;
   }, {index: -1, offset: -1, childCount: 0, endIndex: -1, coveredRange: -1, lastIndex: 0})
 
-  return [result.index, result.offset, result.endIndex]
+  return [result.index, result.offset, result.endIndex >= 0 ? result.endIndex : result.lastIndex + rowRange - result.coveredRange]
 }
