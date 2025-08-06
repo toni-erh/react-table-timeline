@@ -5,7 +5,7 @@ export type TableRowBase = { index: number, id: string, children?: TableRowBase[
 export type TableSceletonRow = { __sceleton_row: true }
 
 export type RowExpansions = { [rowId: number]: RowExpansions }
-export type ExpandedChildCounts = { index: number, childCount: number }[]
+export type ExpandedChildCounts = { index: number, rowCount: number }[]
 
 function isDataRow<TableRow extends TableRowBase>(row: TableRow | TableSceletonRow): row is TableRow {
   return !(row as TableSceletonRow).__sceleton_row;
@@ -54,12 +54,12 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   const expandedChildCounts = React.useRef<ExpandedChildCounts>(rows.reduce(
     (state, cur) => cur.children?.length ? state.concat({ 
       index: cur.index, 
-      childCount: getExpandedChildCount(cur.children, rowExpansions.current[cur.index]) 
+      rowCount: getExpandedChildCount(cur.children, rowExpansions.current[cur.index]) 
     }) : state,
     [] as ExpandedChildCounts
   ))
   const expandedRowCount = React.useMemo(() => {
-    return rowCount + expandedChildCounts.current.reduce((pre, cur) => pre + cur.childCount, 0)
+    return rowCount + expandedChildCounts.current.reduce((pre, cur) => pre + cur.rowCount, 0)
   }, [expandedChildCounts.current])
 
   // flattens the rows with expanded children
@@ -71,10 +71,9 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   // - Expand & collapse handling
   // - Adjust requested range
   // - Update treeState when inconsistency detected
-  console.log(expandedRowCount, rowExpansions.current, expandedChildCounts.current, flatRows)
-
   const { scrollContainerRef, firstRenderedIndex, preparedRows } = useVirtualRows(
     flatRows,
+    rowCount,
     expandedRowCount,
     lineHeight,
     rowVirtualizationMargin,
@@ -102,6 +101,15 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
     };
   }, [isResizing]);
 
+  // console.log(
+  //   "firstRenderedIndex", firstRenderedIndex,
+  //   "\nexpandedRowCount", expandedRowCount,
+  //   // "rowExpansions", rowExpansions.current,
+  //   "\nexpandedChildCounts", expandedChildCounts.current,
+  //   "\nflatRows", flatRows,
+  //   "\npreparedRows", preparedRows
+  // )
+
   return (
     <div style={{ height: '100%', position: 'relative' }}>
       <div style={{ height: `${lineHeight}px`, width: leftWidth, display: 'flex', alignItems: 'center' }}>
@@ -112,7 +120,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
       <div ref={scrollContainerRef} style={{ overflowY: 'auto', height: `calc(100% - ${lineHeight}px)`, display: 'flex' }}>
         <div style={{
           // TODO: make lazy loading process the tree information
-          height: `${(expandedRowCount - firstRenderedIndex + expandedChildCounts.current.reduce((pre, cur) => cur.index >= firstRenderedIndex ? pre + cur.childCount : pre, 0)) * lineHeight}px`,
+          height: `${(expandedRowCount - firstRenderedIndex) * lineHeight}px`,
           paddingTop: `${firstRenderedIndex * lineHeight}px`,
           width: leftWidth,
           minWidth: 50,

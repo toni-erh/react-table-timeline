@@ -11,6 +11,7 @@ export type RequestedRows = {
 export function useVirtualRows<TableRow extends TableRowBase>(
   rows: Array<TableRow>,
   rowCount: number,
+  flatRowCount: number,
   lineHeight: number,
   rowVirtualizationMargin: number,
   expandedChildCounts: ExpandedChildCounts,
@@ -29,7 +30,7 @@ export function useVirtualRows<TableRow extends TableRowBase>(
   React.useLayoutEffect(() => {
     const container = scrollContainerRef.current;
     if (container) {
-      setRowCountToRender(Math.min(Math.ceil(container.clientHeight / lineHeight) + rowVirtualizationMargin, rowCount));
+      setRowCountToRender(Math.min(Math.ceil(container.clientHeight / lineHeight) + rowVirtualizationMargin, flatRowCount));
     }
   }, []);
 
@@ -45,7 +46,7 @@ export function useVirtualRows<TableRow extends TableRowBase>(
           const firstFlatIndex = Math.max(virtualFirstFlatIndex, 0);
           const lastFlatIndex = Math.min(
             virtualFirstFlatIndex + Math.ceil(container.clientHeight / lineHeight) + 2 * rowVirtualizationMargin,
-            rowCount
+            flatRowCount
           );
 
           const [firstRealIndex, offset, endIndex] = getFirstLevelIndexAndOffset(firstFlatIndex, expandedChildCounts, lastFlatIndex - firstFlatIndex);
@@ -53,7 +54,7 @@ export function useVirtualRows<TableRow extends TableRowBase>(
           setFirstRenderedIndex(firstFlatIndex);
           setRowCountToRender(lastFlatIndex - firstFlatIndex);
           setFirstRealIndex(firstRealIndex);
-          setLastRealIndex(Math.min(endIndex, rowCount));
+          setLastRealIndex(Math.min(endIndex, rowCount - 1));
           setOffsetToFirstRealIndex(offset);
           ticking = false;
         });
@@ -64,7 +65,7 @@ export function useVirtualRows<TableRow extends TableRowBase>(
     return () => {
       container.removeEventListener('scroll', handleScroll);
     };
-  }, [lineHeight, rowVirtualizationMargin, rowCount]);
+  }, [lineHeight, rowVirtualizationMargin, flatRowCount]);
 
   // Notify parent about the range of rows to render
   React.useEffect(() => {
@@ -74,7 +75,7 @@ export function useVirtualRows<TableRow extends TableRowBase>(
       firstLevelRowCount: lastRealIndex - firstRealIndex,
       rowExpansions,
     })
-  }, [firstRenderedIndex, rowCountToRender])
+  }, [firstRealIndex, lastRealIndex, rowExpansions])
 
   // Prepare rows to render
   const preparedRows: (TableRow | TableSceletonRow)[] = React.useMemo(() => {
@@ -83,24 +84,29 @@ export function useVirtualRows<TableRow extends TableRowBase>(
     const firstIndex = rows[0].index
     if (firstIndex === undefined) throw Error(`All rows require an 'index'! It is missing for: ${JSON.stringify(rows[0])}`);
 
-    const relativeIndex = firstRenderedIndex - firstIndex
+    if (firstRealIndex === firstIndex) {
+      const rowSection: (TableRow | TableSceletonRow)[] = rows.slice(offsetToFirstRealIndex, offsetToFirstRealIndex + rowCountToRender);
+      rowSection.push(...Array<TableSceletonRow>(rowCountToRender - rowSection.length).fill({ __sceleton_row: true }))
+      return rowSection
+    }
 
-    if (relativeIndex >= 0) {
-      const rowSection: (TableRow | TableSceletonRow)[] = rows.slice(relativeIndex, relativeIndex + rowCountToRender);
+    if (firstIndex < firstRealIndex) {
+      const offset = getRowCountInRange(expandedChildCounts, firstIndex, firstRealIndex) + offsetToFirstRealIndex;
+      const rowSection: (TableRow | TableSceletonRow)[] = rows.slice(offset, offset + rowCountToRender);
       rowSection.push(...Array<TableSceletonRow>(rowCountToRender - rowSection.length).fill({ __sceleton_row: true }))
       return rowSection
     } else {
-      const sceletonCount = relativeIndex * -1
-      if (sceletonCount > rowCountToRender) {
+      const offset = getRowCountInRange(expandedChildCounts, firstRealIndex, firstIndex) - offsetToFirstRealIndex;
+      if (offset > rowCountToRender) {
         return Array<TableSceletonRow>(rowCountToRender).fill({ __sceleton_row: true })
       } else {
-        const rowSection = [...Array<TableSceletonRow>(sceletonCount).fill({ __sceleton_row: true }), ...rows.slice(0, rowCountToRender - sceletonCount)]
+        const rowSection = [...Array<TableSceletonRow>(offset).fill({ __sceleton_row: true }), ...rows.slice(0, rowCountToRender - offset)]
         if (rowSection.length < rowCountToRender)
           rowSection.push(...Array<TableSceletonRow>(rowCountToRender - rowSection.length).fill({ __sceleton_row: true }))
         return rowSection
       }
     }
-  }, [rows, firstRenderedIndex, rowCountToRender])
+  }, [rows, firstRealIndex, rowCountToRender, offsetToFirstRealIndex])
 
   return {
     scrollContainerRef,
@@ -116,7 +122,7 @@ function getFirstLevelIndexAndOffset(flatIndex: number, expandedChildCounts: Exp
 
     // If offset is 0 or higher, we found the start index and only need to find the end index
     if (pre.offset >= 0) {
-      pre.coveredRange += cur.index + cur.childCount - pre.lastIndex;
+      pre.coveredRange += cur.index + cur.rowCount - pre.lastIndex;
       if (pre.coveredRange >= rowRange) {
         pre.endIndex = cur.index;
         return pre;
@@ -135,7 +141,7 @@ function getFirstLevelIndexAndOffset(flatIndex: number, expandedChildCounts: Exp
     if (currentOffset <= 0) {
       pre.index = cur.index + currentOffset;
       pre.offset = 0;
-      pre.coveredRange = cur.childCount - currentOffset;
+      pre.coveredRange = cur.rowCount - currentOffset;
 
       // If the negative offset is higher than the needed row range, the end index is within the current range as well
       if (-currentOffset > rowRange) {
@@ -147,20 +153,41 @@ function getFirstLevelIndexAndOffset(flatIndex: number, expandedChildCounts: Exp
       return pre;
     }
     // If the offset is positive, we can check if it is covered by the current children
-    if (currentOffset <= cur.childCount) {
+    if (currentOffset <= cur.rowCount) {
       pre.index = cur.index;
       pre.offset = currentOffset;
-      pre.childCount += cur.childCount;
-      if (cur.childCount - currentOffset > rowRange) {
+      pre.childCount += cur.rowCount;
+      if (cur.rowCount - currentOffset > rowRange) {
         pre.endIndex = cur.index;
       }
-      pre.coveredRange = cur.childCount - currentOffset;
+      pre.coveredRange = cur.rowCount - currentOffset;
       return pre;
     }
 
-    pre.childCount += cur.childCount;
+    pre.childCount += cur.rowCount;
     return pre;
   }, {index: -1, offset: -1, childCount: 0, endIndex: -1, coveredRange: -1, lastIndex: 0})
 
   return [result.index, result.offset, result.endIndex >= 0 ? result.endIndex : result.lastIndex + rowRange - result.coveredRange]
+}
+
+function getRowCountInRange(expandedChildCounts: ExpandedChildCounts, firstIndex: number, lastIndex: number): number {
+  return expandedChildCounts.reduce((pre, cur) => {
+    if (cur.index < firstIndex) return pre;
+    if (cur.index >= lastIndex){
+      if (pre.index >= lastIndex) return pre;
+      pre.rowCount += lastIndex - pre.index - 1;
+      pre.index = cur.index;
+      return pre;
+    }
+
+    if (pre.index === -1) {
+      pre.rowCount += 1;
+    } else {
+      pre.rowCount += cur.index - pre.index;
+    } 
+    pre.rowCount += cur.rowCount;
+    pre.index = cur.index;
+    return pre;
+  }, {index: -1, rowCount: 0}).rowCount
 }
