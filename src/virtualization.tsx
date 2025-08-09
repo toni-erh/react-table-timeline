@@ -48,14 +48,23 @@ export function useVirtualRows<TableRow extends TableRowBase>(
             virtualFirstFlatIndex + Math.ceil(container.clientHeight / lineHeight) + 2 * rowVirtualizationMargin,
             flatRowCount
           );
+          const newRowCountToRender = lastFlatIndex - firstFlatIndex
 
-          const [firstRealIndex, offset, endIndex] = getFirstLevelIndexAndOffset(firstFlatIndex, expandedChildCounts, lastFlatIndex - firstFlatIndex);
+          setRowCountToRender((oldRowCountToRender) => {
+            setFirstRenderedIndex((oldFirstRenderedIndex) => {
+              if (oldFirstRenderedIndex !== firstFlatIndex || oldRowCountToRender !== newRowCountToRender) {
+                setRowCountToRender(newRowCountToRender);
 
-          setFirstRenderedIndex(firstFlatIndex);
-          setRowCountToRender(lastFlatIndex - firstFlatIndex);
-          setFirstRealIndex(firstRealIndex);
-          setLastRealIndex(Math.min(endIndex, rowCount - 1));
-          setOffsetToFirstRealIndex(offset);
+                const [firstRealIndex, offset, endIndex] = getFirstLevelIndexAndOffset(firstFlatIndex, expandedChildCounts, newRowCountToRender);
+
+                setFirstRealIndex(firstRealIndex);
+                setLastRealIndex(Math.min(endIndex, rowCount - 1));
+                setOffsetToFirstRealIndex(offset);
+              }
+              return firstFlatIndex
+            })
+            return newRowCountToRender
+          })
           ticking = false;
         });
         ticking = true;
@@ -117,7 +126,7 @@ export function useVirtualRows<TableRow extends TableRowBase>(
 }
 
 function getFirstLevelIndexAndOffset(flatIndex: number, expandedChildCounts: ExpandedChildCounts, rowRange: number): [number, number, number] {
-  const result = expandedChildCounts.reduce((pre: {index: number, offset: number, childCount: number, endIndex: number, coveredRange: number, lastIndex: number}, cur) => {
+  const result = expandedChildCounts.reduce((pre: { index: number, offset: number, childCount: number, endIndex: number, coveredRange: number, lastIndex: number }, cur) => {
     // If we have already found the end index, we can stop
     if (pre.endIndex >= 0) return pre;
 
@@ -147,7 +156,7 @@ function getFirstLevelIndexAndOffset(flatIndex: number, expandedChildCounts: Exp
       // If the negative offset is higher than the needed row range, the end index is within the current range as well
       if (-currentOffset > rowRange) {
         pre.endIndex = pre.index + rowRange;
-      // And if the current children are enough to cover the needed row range, the end index is the current index
+        // And if the current children are enough to cover the needed row range, the end index is the current index
       } else if (pre.coveredRange >= rowRange) {
         pre.endIndex = cur.index;
       }
@@ -167,14 +176,18 @@ function getFirstLevelIndexAndOffset(flatIndex: number, expandedChildCounts: Exp
 
     pre.childCount += cur.rowCount;
     return pre;
-  }, {index: -1, offset: -1, childCount: 0, endIndex: -1, coveredRange: -1, lastIndex: 0})
+  }, { index: -1, offset: -1, childCount: 0, endIndex: -1, coveredRange: -1, lastIndex: 0 })
 
   if (result.index === -1) {
     result.index = flatIndex - result.childCount;
     result.offset = 0;
   }
   if (result.endIndex === -1) {
-    result.endIndex = result.lastIndex + rowRange - result.coveredRange;
+    if (result.index <= result.lastIndex) {
+      result.endIndex = result.lastIndex + rowRange - result.coveredRange;
+    } else {
+      result.endIndex = result.index + rowRange;
+    }
   }
 
   return [result.index, result.offset, result.endIndex]
@@ -183,7 +196,7 @@ function getFirstLevelIndexAndOffset(flatIndex: number, expandedChildCounts: Exp
 function getRowCountInRange(expandedChildCounts: ExpandedChildCounts, firstIndex: number, lastIndex: number): number {
   return expandedChildCounts.reduce((pre, cur) => {
     if (cur.index < firstIndex) return pre;
-    if (cur.index >= lastIndex){
+    if (cur.index >= lastIndex) {
       if (pre.index >= lastIndex) return pre;
       pre.rowCount += lastIndex - pre.index - 1;
       pre.index = cur.index;
@@ -194,9 +207,9 @@ function getRowCountInRange(expandedChildCounts: ExpandedChildCounts, firstIndex
       pre.rowCount += 1;
     } else {
       pre.rowCount += cur.index - pre.index;
-    } 
+    }
     pre.rowCount += cur.rowCount;
     pre.index = cur.index;
     return pre;
-  }, {index: -1, rowCount: 0}).rowCount
+  }, { index: -1, rowCount: 0 }).rowCount
 }
