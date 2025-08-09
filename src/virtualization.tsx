@@ -22,8 +22,8 @@ export function useVirtualRows<TableRow extends TableRowBase>(
 
   const [firstRenderedIndex, setFirstRenderedIndex] = React.useState(0);
   const [rowCountToRender, setRowCountToRender] = React.useState(1);
-  const [firstRealIndex, setFirstRealIndex] = React.useState(0);
-  const [lastRealIndex, setLastRealIndex] = React.useState(0);
+  const [firstRealIndex, setFirstRealIndex] = React.useState(-1);
+  const [lastRealIndex, setLastRealIndex] = React.useState(-1);
   const [offsetToFirstRealIndex, setOffsetToFirstRealIndex] = React.useState(0);
 
   // Calculate initial row count to render
@@ -69,6 +69,7 @@ export function useVirtualRows<TableRow extends TableRowBase>(
 
   // Notify parent about the range of rows to render
   React.useEffect(() => {
+    if (firstRealIndex === -1 || lastRealIndex === -1) return;
     onRowRangeChange?.({
       firstFirstLevelIndex: firstRealIndex,
       lastFirstLevelIndex: lastRealIndex,
@@ -168,7 +169,15 @@ function getFirstLevelIndexAndOffset(flatIndex: number, expandedChildCounts: Exp
     return pre;
   }, {index: -1, offset: -1, childCount: 0, endIndex: -1, coveredRange: -1, lastIndex: 0})
 
-  return [result.index, result.offset, result.endIndex >= 0 ? result.endIndex : result.lastIndex + rowRange - result.coveredRange]
+  if (result.index === -1) {
+    result.index = flatIndex - result.childCount;
+    result.offset = 0;
+  }
+  if (result.endIndex === -1) {
+    result.endIndex = result.lastIndex + rowRange - result.coveredRange;
+  }
+
+  return [result.index, result.offset, result.endIndex]
 }
 
 function getRowCountInRange(expandedChildCounts: ExpandedChildCounts, firstIndex: number, lastIndex: number): number {

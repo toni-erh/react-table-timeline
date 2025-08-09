@@ -48,24 +48,42 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   defaultExpansionDepth
 }: TableProps<TableRow>) => {
   // For tracking which rows are expanded
-  const rowExpansions = React.useRef<RowExpansions>(getInitialExpansions(rows, defaultExpansionDepth));
+  const [rowExpansions, setRowExpansions] = React.useState<RowExpansions>(() => {
+    console.time("getInitialExpansions");
+    const initialExpansions = getInitialExpansions(rows, defaultExpansionDepth);
+    console.timeEnd("getInitialExpansions");
+    return initialExpansions;
+  });
 
   // For easy counting of rows before and after visible rows
-  const expandedChildCounts = React.useRef<ExpandedChildCounts>(rows.reduce(
-    (state, cur) => cur.children?.length ? state.concat({ 
-      index: cur.index, 
-      rowCount: getExpandedChildCount(cur.children, rowExpansions.current[cur.index]) 
-    }) : state,
-    [] as ExpandedChildCounts
-  ))
+  const expandedChildCounts = React.useMemo<ExpandedChildCounts>((() => {
+    // TODO: Don't recompute, only update if rows or rowExpansions change
+    console.time("getExpandedChildCounts");
+    const childCounts = rows.reduce(
+      (state, cur) => cur.children?.length ? state.concat({ 
+        index: cur.index, 
+        rowCount: getExpandedChildCount(cur.children, rowExpansions[cur.index]) 
+      }) : state,
+      [] as ExpandedChildCounts
+    );
+    console.timeEnd("getExpandedChildCounts");
+    return childCounts;
+  }), [rows, rowExpansions]);
+
   const expandedRowCount = React.useMemo(() => {
-    return rowCount + expandedChildCounts.current.reduce((pre, cur) => pre + cur.rowCount, 0)
-  }, [expandedChildCounts.current])
+    console.time("getExpandedRowCount");
+    const result = rowCount + expandedChildCounts.reduce((pre, cur) => pre + cur.rowCount, 0)
+    console.timeEnd("getExpandedRowCount");
+    return result;
+  }, [expandedChildCounts])
 
   // flattens the rows with expanded children
   const flatRows = React.useMemo(() => {
-    return rows.flatMap((row) => flattenExpanded(row, rowExpansions.current[row.index]))
-  }, [rows, rowExpansions.current])
+    console.time("flattenExpanded");
+    const result = rows.flatMap((row) => flattenExpanded(row, rowExpansions[row.index]))
+    console.timeEnd("flattenExpanded");
+    return result;
+  }, [rows, rowExpansions])
 
 
   // - Expand & collapse handling
@@ -77,8 +95,8 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
     expandedRowCount,
     lineHeight,
     rowVirtualizationMargin,
-    expandedChildCounts.current,
-    rowExpansions.current,
+    expandedChildCounts,
+    rowExpansions,
     onRowRangeChange
   );
   const [leftWidth, setLeftWidth] = React.useState(300);
@@ -101,15 +119,6 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
     };
   }, [isResizing]);
 
-  // console.log(
-  //   "firstRenderedIndex", firstRenderedIndex,
-  //   "\nexpandedRowCount", expandedRowCount,
-  //   // "rowExpansions", rowExpansions.current,
-  //   "\nexpandedChildCounts", expandedChildCounts.current,
-  //   "\nflatRows", flatRows,
-  //   "\npreparedRows", preparedRows
-  // )
-
   return (
     <div style={{ height: '100%', position: 'relative' }}>
       <div style={{ height: `${lineHeight}px`, width: leftWidth, display: 'flex', alignItems: 'center' }}>
@@ -119,7 +128,6 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
       </div>
       <div ref={scrollContainerRef} style={{ overflowY: 'auto', height: `calc(100% - ${lineHeight}px)`, display: 'flex' }}>
         <div style={{
-          // TODO: make lazy loading process the tree information
           height: `${(expandedRowCount - firstRenderedIndex) * lineHeight}px`,
           paddingTop: `${firstRenderedIndex * lineHeight}px`,
           width: leftWidth,
@@ -137,7 +145,9 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
                 ))}
               </div>
             ) : (
-              <div key={`sceleton_${index}`} style={{ height: `${lineHeight - 6}px`, marginBlock: '6px', backgroundColor: 'lightgrey', borderRadius: 5 }} />
+              <div key={`sceleton_${index}`} style={{ padding: '3px' }}>
+                <div style={{ height: `${lineHeight - 6}px`, backgroundColor: 'lightgrey', borderRadius: 5 }} />
+              </div>
             )
           )}
         </div>
