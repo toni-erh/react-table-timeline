@@ -56,7 +56,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   });
 
   // For easy counting of rows before and after visible rows
-  const expandedChildCounts = React.useMemo<ExpandedChildCounts>((() => {
+  const [expandedChildCounts, setExpandedChildCounts] = React.useState<ExpandedChildCounts>(() => {
     // TODO: Don't recompute, only update if rows or rowExpansions change
     console.time("getExpandedChildCounts");
     const childCounts = rows.reduce(
@@ -68,7 +68,44 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
     );
     console.timeEnd("getExpandedChildCounts");
     return childCounts;
-  }), [rows, rowExpansions]);
+  });
+
+  React.useEffect(() => {
+    console.time("updateExpandedChildCounts");
+
+    setExpandedChildCounts((prev) => {
+      const updatedChildCounts = [];
+      const iterator = prev.values();
+
+      let next = iterator.next();
+
+      // Copy rows that are not in the new list
+      while (!next.done && next.value.index < rows[0]?.index) {
+        updatedChildCounts.push(next.value);
+        next = iterator.next();
+      }
+
+      // Update rows that are in the new list
+      rows.forEach((row) => {
+        if (row.children?.length) {
+          const childCount = getExpandedChildCount(row.children, rowExpansions[row.index]);
+          if (childCount !== expandedChildCounts[row.index].rowCount) {
+            expandedChildCounts[row.index].rowCount = childCount;
+          }
+        }
+      });
+
+      // Copy rows that are not in the new list
+      while (!next.done) {
+        updatedChildCounts.push(next.value);
+        next = iterator.next();
+      }
+
+      return updatedChildCounts;
+    });
+
+    console.timeEnd("updateExpandedChildCounts");
+  }, [rows, rowExpansions]);
 
   const expandedRowCount = React.useMemo(() => {
     console.time("getExpandedRowCount");
