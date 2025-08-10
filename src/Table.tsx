@@ -22,7 +22,6 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
     flatRows
   } = useTreeExpansion(rows, rowCount, defaultExpansionDepth);
 
-
   // Use virtualization hook
   const { scrollContainerRef, firstRenderedIndex, preparedRows } = useVirtualization(
     flatRows,

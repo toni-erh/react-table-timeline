@@ -11,12 +11,13 @@ export function isDataRow<TableRow extends TableRowBase>(
 
 /**
  * Calculates the first level index and offset for virtualization
- * Returns [firstLevelIndex, offset, endIndex]
+ * Returns [firstLevelIndex, offset, lastRealIndex]
  */
 export function getFirstLevelIndexAndOffset(
   flatIndex: number, 
   expandedChildCounts: ExpandedChildCounts, 
-  rowRange: number
+  rowRange: number,
+  rowCount: number
 ): [number, number, number] {
   const result = expandedChildCounts.reduce((pre: { 
     index: number; 
@@ -89,7 +90,10 @@ export function getFirstLevelIndexAndOffset(
     }
   }
 
-  return [result.index, result.offset, result.endIndex];
+  // Calculate final lastRealIndex with rowCount boundary
+  const lastRealIndex = Math.min(result.endIndex, rowCount - 1);
+  
+  return [result.index, result.offset, lastRealIndex];
 }
 
 /**

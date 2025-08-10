@@ -7,9 +7,10 @@ import type {
   RequestedRows 
 } from '../types/tableTypes';
 import { 
-  getFirstLevelIndexAndOffset, 
-  getRowCountInRange 
+  getFirstLevelIndexAndOffset 
 } from '../utils/virtualizationUtils';
+import { calculateVisibleRowRange } from '../utils/scrollCalculations';
+import { prepareVirtualizedRows } from '../utils/rowPreparation';
 
 export interface UseVirtualizationReturn<TableRow extends TableRowBase> {
   scrollContainerRef: React.RefObject<HTMLDivElement>;
@@ -32,102 +33,91 @@ export function useVirtualization<TableRow extends TableRowBase>(
 ): UseVirtualizationReturn<TableRow> {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
-  const [firstRenderedIndex, setFirstRenderedIndex] = React.useState(0);
-  const [rowCountToRender, setRowCountToRender] = React.useState(1);
-  const [firstRealIndex, setFirstRealIndex] = React.useState(-1);
-  const [lastRealIndex, setLastRealIndex] = React.useState(-1);
-  const [offsetToFirstRealIndex, setOffsetToFirstRealIndex] = React.useState(0);
+  const [containerClientHeight, setContainerClientHeight] = React.useState<number | undefined>(undefined);
+  const [containerScrollTop, setContainerScrollTop] = React.useState<number | undefined>(undefined);
 
-  // Calculate initial row count to render
+  const [firstRenderedIndex, setFirstRenderedIndex] = React.useState(0);
+  const [rowCountToRender, setRowCountToRender] = React.useState<number | undefined>(undefined);
+  const [firstRealIndex, setFirstRealIndex] = React.useState<number | undefined>(undefined);
+  const [lastRealIndex, setLastRealIndex] = React.useState<number | undefined>(undefined);
+  const [offsetToFirstRealIndex, setOffsetToFirstRealIndex] = React.useState<number | undefined>(undefined);
+
+  // Calculate initial values for virtualization and handle scroll events
   React.useLayoutEffect(() => {
     const container = scrollContainerRef.current;
-    if (container) {
-      setRowCountToRender(Math.min(Math.ceil(container.clientHeight / lineHeight) + rowVirtualizationMargin, flatRowCount));
-    }
-  }, [lineHeight, rowVirtualizationMargin, flatRowCount]);
-
-  // Handle scroll events
-  React.useEffect(() => {
-    const container = scrollContainerRef.current;
     if (!container) return;
+
+    setContainerClientHeight(container.clientHeight);
+    setContainerScrollTop(container.scrollTop);
+
     let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const virtualFirstFlatIndex = Math.floor(container.scrollTop / lineHeight) - rowVirtualizationMargin;
-          const firstFlatIndex = Math.max(virtualFirstFlatIndex, 0);
-          const lastFlatIndex = Math.min(
-            virtualFirstFlatIndex + Math.ceil(container.clientHeight / lineHeight) + 2 * rowVirtualizationMargin,
-            flatRowCount
-          );
-          const newRowCountToRender = lastFlatIndex - firstFlatIndex;
-
-          setRowCountToRender((oldRowCountToRender) => {
-            setFirstRenderedIndex((oldFirstRenderedIndex) => {
-              if (oldFirstRenderedIndex !== firstFlatIndex || oldRowCountToRender !== newRowCountToRender) {
-                setRowCountToRender(newRowCountToRender);
-
-                const [firstRealIndex, offset, endIndex] = getFirstLevelIndexAndOffset(firstFlatIndex, expandedChildCounts, newRowCountToRender);
-
-                setFirstRealIndex(firstRealIndex);
-                setLastRealIndex(Math.min(endIndex, rowCount - 1));
-                setOffsetToFirstRealIndex(offset);
-              }
-              return firstFlatIndex;
-            });
-            return newRowCountToRender;
-          });
+          setContainerScrollTop(container.scrollTop);
+          setContainerClientHeight(container.clientHeight);
           ticking = false;
         });
         ticking = true;
       }
     };
+
     container.addEventListener('scroll', handleScroll);
     return () => {
       container.removeEventListener('scroll', handleScroll);
     };
-  }, [lineHeight, rowVirtualizationMargin, flatRowCount, expandedChildCounts, rowCount]);
+  }, []);
+
+  React.useEffect(() => {
+    if (containerScrollTop === undefined || containerClientHeight === undefined) return;
+
+    const { firstFlatIndex, rowCountToRender: newRowCountToRender } = calculateVisibleRowRange(
+      containerScrollTop,
+      containerClientHeight,
+      lineHeight,
+      rowVirtualizationMargin,
+      flatRowCount
+    );
+    
+    if (firstRenderedIndex === firstFlatIndex && rowCountToRender === newRowCountToRender) return;
+
+    const [initialFirstRealIndex, initialOffset, initialLastRealIndex] = getFirstLevelIndexAndOffset(
+      firstFlatIndex, 
+      expandedChildCounts, 
+      newRowCountToRender, 
+      rowCount
+    );
+    
+    setFirstRenderedIndex(firstFlatIndex);
+    setRowCountToRender(newRowCountToRender);
+    setFirstRealIndex(initialFirstRealIndex);
+    setLastRealIndex(initialLastRealIndex);
+    setOffsetToFirstRealIndex(initialOffset);
+  }, [lineHeight, rowVirtualizationMargin, flatRowCount, containerScrollTop, containerClientHeight]);
 
   // Notify parent about the range of rows to render
   React.useEffect(() => {
-    if (firstRealIndex === -1 || lastRealIndex === -1) return;
+    if (firstRealIndex === undefined || lastRealIndex === undefined) return;
     onRowRangeChange?.({
       firstFirstLevelIndex: firstRealIndex,
       lastFirstLevelIndex: lastRealIndex,
       firstLevelRowCount: lastRealIndex - firstRealIndex,
       rowExpansions,
     });
-  }, [firstRealIndex, lastRealIndex, rowExpansions, onRowRangeChange]);
+  }, [firstRealIndex, lastRealIndex]);
 
   // Prepare rows to render
   const preparedRows: (TableRow | TableSceletonRow)[] = React.useMemo(() => {
-    if (rows.length === 0) return [];
-
-    const firstIndex = rows[0].index;
-    if (firstIndex === undefined) throw Error(`All rows require an 'index'! It is missing for: ${JSON.stringify(rows[0])}`);
-
-    if (firstRealIndex === firstIndex) {
-      const rowSection: (TableRow | TableSceletonRow)[] = rows.slice(offsetToFirstRealIndex, offsetToFirstRealIndex + rowCountToRender);
-      rowSection.push(...Array<TableSceletonRow>(rowCountToRender - rowSection.length).fill({ __sceleton_row: true }));
-      return rowSection;
+    if (offsetToFirstRealIndex === undefined || rowCountToRender === undefined || firstRealIndex === undefined) {
+      return [];
     }
-
-    if (firstIndex < firstRealIndex) {
-      const offset = getRowCountInRange(expandedChildCounts, firstIndex, firstRealIndex) + offsetToFirstRealIndex;
-      const rowSection: (TableRow | TableSceletonRow)[] = rows.slice(offset, offset + rowCountToRender);
-      rowSection.push(...Array<TableSceletonRow>(rowCountToRender - rowSection.length).fill({ __sceleton_row: true }));
-      return rowSection;
-    } else {
-      const offset = getRowCountInRange(expandedChildCounts, firstRealIndex, firstIndex) - offsetToFirstRealIndex;
-      if (offset > rowCountToRender) {
-        return Array<TableSceletonRow>(rowCountToRender).fill({ __sceleton_row: true });
-      } else {
-        const rowSection = [...Array<TableSceletonRow>(offset).fill({ __sceleton_row: true }), ...rows.slice(0, rowCountToRender - offset)];
-        if (rowSection.length < rowCountToRender)
-          rowSection.push(...Array<TableSceletonRow>(rowCountToRender - rowSection.length).fill({ __sceleton_row: true }));
-        return rowSection;
-      }
-    }
+    return prepareVirtualizedRows(
+      rows,
+      firstRealIndex,
+      offsetToFirstRealIndex,
+      rowCountToRender,
+      expandedChildCounts
+    );
   }, [rows, firstRealIndex, rowCountToRender, offsetToFirstRealIndex, expandedChildCounts]);
 
   return {
