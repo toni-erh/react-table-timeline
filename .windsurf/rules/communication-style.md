@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Kommunikationsstil & Zusammenarbeit
 
 ## 💬 Sprache & Ton

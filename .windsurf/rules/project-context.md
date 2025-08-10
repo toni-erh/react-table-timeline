@@ -1,3 +1,8 @@
+---
+trigger: model_decision
+description: When working on features
+---
+
 # Table Library - Projektkontext
 
 ## 🏗️ Architektur Übersicht

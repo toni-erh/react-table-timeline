@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Architecture Decision Records (ADRs)
 
 ## ADR-001: Virtualization Strategy
