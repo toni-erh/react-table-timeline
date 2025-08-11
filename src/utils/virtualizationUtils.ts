@@ -16,8 +16,8 @@ export function isDataRow<TableRow extends TableRowBase>(
 export function getFirstLevelIndexAndOffset(
   flatIndex: number, 
   expandedChildCounts: ExpandedChildCounts, 
-  rowRange: number,
-  rowCount: number
+  rowRangeSize: number,
+  totalRowCount: number
 ): [number, number, number] {
   const result = expandedChildCounts.reduce((pre: { 
     index: number; 
@@ -32,8 +32,13 @@ export function getFirstLevelIndexAndOffset(
 
     // If offset is 0 or higher, we found the start index and only need to find the end index
     if (pre.offset >= 0) {
-      pre.coveredRange += cur.index + cur.rowCount - pre.lastIndex;
-      if (pre.coveredRange >= rowRange) {
+      pre.coveredRange += cur.index - pre.lastIndex + 1;
+      if (pre.coveredRange >= rowRangeSize) {
+        pre.endIndex = cur.index - (pre.coveredRange - rowRangeSize);
+        return pre;
+      }
+      pre.coveredRange += cur.rowCount;
+      if (pre.coveredRange >= rowRangeSize) {
         pre.endIndex = cur.index;
         return pre;
       }
@@ -54,10 +59,10 @@ export function getFirstLevelIndexAndOffset(
       pre.coveredRange = cur.rowCount - currentOffset;
 
       // If the negative offset is higher than the needed row range, the end index is within the current range as well
-      if (-currentOffset > rowRange) {
-        pre.endIndex = pre.index + rowRange;
+      if (-currentOffset > rowRangeSize) {
+        pre.endIndex = pre.index + rowRangeSize;
         // And if the current children are enough to cover the needed row range, the end index is the current index
-      } else if (pre.coveredRange >= rowRange) {
+      } else if (pre.coveredRange >= rowRangeSize) {
         pre.endIndex = cur.index;
       }
       return pre;
@@ -67,7 +72,7 @@ export function getFirstLevelIndexAndOffset(
       pre.index = cur.index;
       pre.offset = currentOffset;
       pre.childCount += cur.rowCount;
-      if (cur.rowCount - currentOffset > rowRange) {
+      if (cur.rowCount - currentOffset > rowRangeSize) {
         pre.endIndex = cur.index;
       }
       pre.coveredRange = cur.rowCount - currentOffset;
@@ -84,16 +89,17 @@ export function getFirstLevelIndexAndOffset(
   }
   if (result.endIndex === -1) {
     if (result.index <= result.lastIndex) {
-      result.endIndex = result.lastIndex + rowRange - result.coveredRange;
+      result.endIndex = result.lastIndex + rowRangeSize - result.coveredRange - 1;
     } else {
-      result.endIndex = result.index + rowRange;
+      result.endIndex = result.index + rowRangeSize - 1;
     }
   }
 
-  // Calculate final lastRealIndex with rowCount boundary
-  const lastRealIndex = Math.min(result.endIndex, rowCount - 1);
+  // Calculate final indices with rowCount boundary
+  const firstRealIndex = Math.min(result.endIndex, totalRowCount - 1);
+  const lastRealIndex = Math.min(result.endIndex, totalRowCount - 1);
   
-  return [result.index, result.offset, lastRealIndex];
+  return [firstRealIndex, result.offset, lastRealIndex];
 }
 
 /**
@@ -104,22 +110,14 @@ export function getRowCountInRange(
   firstIndex: number, 
   lastIndex: number
 ): number {
-  return expandedChildCounts.reduce((pre, cur) => {
-    if (cur.index < firstIndex) return pre;
-    if (cur.index >= lastIndex) {
-      if (pre.index >= lastIndex) return pre;
-      pre.rowCount += lastIndex - pre.index - 1;
-      pre.index = cur.index;
-      return pre;
-    }
+  if (firstIndex === lastIndex) return 1;
 
-    if (pre.index === -1) {
-      pre.rowCount += 1;
-    } else {
-      pre.rowCount += cur.index - pre.index;
+  const childrenInRange = expandedChildCounts.reduce((pre, cur) => {
+    if (cur.index >= firstIndex && cur.index <= lastIndex) {
+      return pre + cur.rowCount;
     }
-    pre.rowCount += cur.rowCount;
-    pre.index = cur.index;
     return pre;
-  }, { index: -1, rowCount: 0 }).rowCount;
+  }, 0);
+
+  return childrenInRange + (lastIndex - firstIndex + 1);
 }
