@@ -37,7 +37,7 @@ export function getExpandedChildCount(
 }
 
 /**
- * Flattens a tree row with its expanded children into a flat array
+ * Flattens a tree row followed by its expanded children into a flat array
  */
 export function flattenExpanded(
   row: TableRowBase, 
