@@ -1,9 +1,7 @@
 import React from 'react';
 import type { TableRowBase, RowExpansions, ExpandedChildCounts } from '../types/tableTypes';
-import { generateInitialExpansions, getExpandedChildCount, flattenExpanded } from '../utils/treeUtils';
-import { updateExpandedChildCounts, calculateExpandedRowCount } from '../utils/expansionUtils';
-
-const showTiming = false;
+import { generateInitialExpansions, flattenExpanded } from '../utils/treeUtils';
+import { updateExpandedChildCounts, calculateExpandedRowCount, calculateInitialExpandedChildCounts } from '../utils/expansionUtils';
 
 interface UseTreeExpansionReturn {
   rowExpansions: RowExpansions;
@@ -22,51 +20,29 @@ export function useTreeExpansion(
   defaultExpansionDepth?: number
 ): UseTreeExpansionReturn {
   // For tracking which rows are expanded
-  const [rowExpansions, setRowExpansions] = React.useState<RowExpansions>(() => {
-    showTiming && console.time("getInitialExpansions");
-    const initialExpansions = generateInitialExpansions(rows, defaultExpansionDepth);
-    showTiming && console.timeEnd("getInitialExpansions");
-    return initialExpansions;
-  });
+  const [rowExpansions, setRowExpansions] = React.useState<RowExpansions>(() => 
+    generateInitialExpansions(rows, defaultExpansionDepth)
+  );
 
   // For easy counting of rows before and after visible rows
-  const [expandedChildCounts, setExpandedChildCounts] = React.useState<ExpandedChildCounts>(() => {
-    showTiming && console.time("getExpandedChildCounts");
-    const childCounts = rows.reduce(
-      (state, cur) => cur.children?.length ? state.concat({
-        index: cur.index,
-        rowCount: getExpandedChildCount(cur.children, rowExpansions[cur.index])
-      }) : state,
-      [] as ExpandedChildCounts
-    );
-    showTiming && console.timeEnd("getExpandedChildCounts");
-    return childCounts;
-  });
+  const [expandedChildCounts, setExpandedChildCounts] = React.useState<ExpandedChildCounts>(() => 
+    calculateInitialExpandedChildCounts(rows, rowExpansions)
+  );
 
   React.useEffect(() => {
-    showTiming && console.time("updateExpandedChildCounts");
-
-    setExpandedChildCounts((prev) => 
-      updateExpandedChildCounts(prev, rows, rowExpansions)
-    );
-
-    showTiming && console.timeEnd("updateExpandedChildCounts");
+    setExpandedChildCounts((prev) => updateExpandedChildCounts(prev, rows, rowExpansions));
   }, [rows, rowExpansions]);
 
-  const expandedRowCount = React.useMemo(() => {
-    showTiming && console.time("getExpandedRowCount");
-    const result = calculateExpandedRowCount(rowCount, expandedChildCounts);
-    showTiming && console.timeEnd("getExpandedRowCount");
-    return result;
-  }, [rowCount, expandedChildCounts]);
+  const expandedRowCount = React.useMemo(
+    () => calculateExpandedRowCount(rowCount, expandedChildCounts), 
+    [rowCount, expandedChildCounts]
+  );
 
   // flattens the rows with expanded children
-  const flatRows = React.useMemo(() => {
-    showTiming && console.time("flattenExpanded");
-    const result = rows.flatMap((row) => flattenExpanded(row, rowExpansions[row.index]));
-    showTiming && console.timeEnd("flattenExpanded");
-    return result;
-  }, [rows, rowExpansions]);
+  const flatRows = React.useMemo(
+    () => rows.flatMap((row) => flattenExpanded(row, rowExpansions[row.index])), 
+    [rows, rowExpansions]
+  );
 
   return {
     rowExpansions,

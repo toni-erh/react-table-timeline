@@ -27,6 +27,7 @@ export function updateExpandedChildCounts(
   rows: TableRowBase[],
   rowExpansions: RowExpansions
 ): ExpandedChildCounts {
+  let hasChanged = false;
   const updatedChildCounts: ExpandedChildCounts = [];
   const iterator = prevChildCounts.values();
   
@@ -40,17 +41,30 @@ export function updateExpandedChildCounts(
   
   // Update rows that are in the new list
   rows.forEach((row) => {
-    if (!next.done && next.value.index <= row.index) {
+    while (!next.done && next.value.index < row.index) {
       next = iterator.next();
     }
     if (row.children?.length) {
       const childCount = getExpandedChildCount(row.children, rowExpansions[row.index]);
+      if (!hasChanged && next.value?.index === row.index && next.value.rowCount !== childCount) {
+        hasChanged = true;
+      }
       if (childCount) {
         updatedChildCounts.push({
           index: row.index,
           rowCount: childCount
         });
+        if (!hasChanged && next.value?.index !== row.index) {
+          hasChanged = true;
+        }
       }
+    } else {
+      if (!hasChanged && next.value?.index === row.index && next.value.rowCount !== 0) {
+        hasChanged = true;
+      }
+    }
+    if (!next.done && next.value.index <= row.index) {
+      next = iterator.next();
     }
   });
   
@@ -60,7 +74,7 @@ export function updateExpandedChildCounts(
     next = iterator.next();
   }
   
-  return updatedChildCounts;
+  return hasChanged ? updatedChildCounts : prevChildCounts;
 }
 
 /**
@@ -71,4 +85,20 @@ export function calculateExpandedRowCount(
   expandedChildCounts: ExpandedChildCounts
 ): number {
   return baseRowCount + expandedChildCounts.reduce((pre, cur) => pre + cur.rowCount, 0);
+}
+
+/**
+ * Calculates initial expanded child counts for all rows with children
+ */
+export function calculateInitialExpandedChildCounts(
+  rows: TableRowBase[],
+  rowExpansions: RowExpansions
+): ExpandedChildCounts {
+  return rows.reduce(
+    (state, cur) => cur.children?.length ? state.concat({
+      index: cur.index,
+      rowCount: getExpandedChildCount(cur.children, rowExpansions[cur.index])
+    }) : state,
+    [] as ExpandedChildCounts
+  );
 }
