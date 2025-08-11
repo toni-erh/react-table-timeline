@@ -30,7 +30,7 @@ export function prepareVirtualizedRows<TableRow extends TableRowBase>(
 
   // Case 2: First index is before real index - calculate offset
   if (firstIndex < firstRealIndex) {
-    const offset = getRowCountInRange(expandedChildCounts, firstIndex, firstRealIndex) + offsetToFirstRealIndex;
+    const offset = getRowCountInRange(expandedChildCounts, firstIndex, firstRealIndex) + offsetToFirstRealIndex - 1;
     const rowSection: (TableRow | TableSceletonRow)[] = rows.slice(offset, offset + rowCountToRender);
     rowSection.push(...Array<TableSceletonRow>(rowCountToRender - rowSection.length).fill({ __sceleton_row: true }));
     return rowSection;
