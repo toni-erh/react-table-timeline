@@ -1,7 +1,7 @@
 import React from 'react';
 import type { TableRowBase, RowExpansions, ExpandedChildCounts } from '../types/tableTypes';
 import { generateInitialExpansions, flattenExpanded } from '../utils/treeUtils';
-import { updateExpandedChildCounts, calculateExpandedRowCount, calculateInitialExpandedChildCounts } from '../utils/expansionUtils';
+import { updateExpandedChildCounts, calculateExpandedRowCount, calculateExpandedChildCounts } from '../utils/expansionUtils';
 
 interface UseTreeExpansionReturn {
   rowExpansions: RowExpansions;
@@ -26,7 +26,7 @@ export function useTreeExpansion(
 
   // For easy counting of rows before and after visible rows
   const [expandedChildCounts, setExpandedChildCounts] = React.useState<ExpandedChildCounts>(() => 
-    calculateInitialExpandedChildCounts(rows, rowExpansions)
+    calculateExpandedChildCounts(rows, rowExpansions)
   );
 
   React.useEffect(() => {

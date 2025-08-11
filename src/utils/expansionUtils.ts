@@ -9,12 +9,18 @@ export function calculateExpandedChildCounts(
   rowExpansions: RowExpansions
 ): ExpandedChildCounts {
   return rows.reduce(
-    (state, cur) => cur.children?.length 
-      ? state.concat({
-          index: cur.index,
-          rowCount: getExpandedChildCount(cur.children, rowExpansions[cur.index])
-        }) 
-      : state,
+    (state, cur) => {
+      if (cur.children?.length) {
+        const childCount = getExpandedChildCount(cur.children, rowExpansions[cur.index]);
+        if (childCount) {
+          return state.concat({
+            index: cur.index,
+            rowCount: childCount
+          });
+        }
+      }
+      return state;
+    },
     [] as ExpandedChildCounts
   );
 }
@@ -85,20 +91,4 @@ export function calculateExpandedRowCount(
   expandedChildCounts: ExpandedChildCounts
 ): number {
   return baseRowCount + expandedChildCounts.reduce((pre, cur) => pre + cur.rowCount, 0);
-}
-
-/**
- * Calculates initial expanded child counts for all rows with children
- */
-export function calculateInitialExpandedChildCounts(
-  rows: TableRowBase[],
-  rowExpansions: RowExpansions
-): ExpandedChildCounts {
-  return rows.reduce(
-    (state, cur) => cur.children?.length ? state.concat({
-      index: cur.index,
-      rowCount: getExpandedChildCount(cur.children, rowExpansions[cur.index])
-    }) : state,
-    [] as ExpandedChildCounts
-  );
 }
