@@ -32,7 +32,7 @@ export function getFirstLevelIndexAndOffset(
 
     // If offset is 0 or higher, we found the start index and only need to find the end index
     if (pre.offset >= 0) {
-      pre.coveredRange += cur.index - pre.lastIndex + 1;
+      pre.coveredRange += cur.index - pre.lastIndex;
       if (pre.coveredRange >= rowRangeSize) {
         pre.endIndex = cur.index - (pre.coveredRange - rowRangeSize);
         return pre;
@@ -72,10 +72,10 @@ export function getFirstLevelIndexAndOffset(
       pre.index = cur.index;
       pre.offset = currentOffset;
       pre.childCount += cur.rowCount;
-      if (cur.rowCount - currentOffset > rowRangeSize) {
+      pre.coveredRange = cur.rowCount - currentOffset + 1;
+      if (pre.coveredRange >= rowRangeSize) {
         pre.endIndex = cur.index;
       }
-      pre.coveredRange = cur.rowCount - currentOffset;
       return pre;
     }
 
@@ -96,7 +96,7 @@ export function getFirstLevelIndexAndOffset(
   }
 
   // Calculate final indices with rowCount boundary
-  const firstRealIndex = Math.min(result.endIndex, totalRowCount - 1);
+  const firstRealIndex = Math.min(result.index, totalRowCount - 1);
   const lastRealIndex = Math.min(result.endIndex, totalRowCount - 1);
   
   return [firstRealIndex, result.offset, lastRealIndex];

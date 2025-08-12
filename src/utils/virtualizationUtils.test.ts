@@ -57,6 +57,20 @@ describe('virtualizationUtils', () => {
       expect(lastIndex).toBe(2);
     });
 
+    it('should handle flatIndex and rowRangeSize to span over expanded children', () => {
+      const expandedChildCounts = [
+        { index: 0, rowCount: 1 },
+        { index: 1, rowCount: 1 },
+        { index: 2, rowCount: 1 },
+        { index: 3, rowCount: 1 }
+      ];
+      const [index, offset, lastIndex] = getFirstLevelIndexAndOffset(0, expandedChildCounts, 10, 20);
+      
+      expect(index).toBe(0);
+      expect(offset).toBe(0);
+      expect(lastIndex).toBe(5);
+    });
+
     it('should handle flat index that falls within expanded children', () => {
       // Flat index 4 should fall within row 2's expanded children
       // Row structure: 0, 1, 2, [2.1, 2.2, 2.3], 3, 4, 5, [5.1, 5.2], 6...
