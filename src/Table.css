@@ -1,0 +1,74 @@
+:root {
+  --table-bg: #fff;
+  --table-border-color: #ddd;
+  --table-border-width: 1px;
+  --table-text-color: #333;
+  --table-header-bg: #f8f8f8;
+  --table-row-hover-bg: #f1f1f1;
+  --table-skeleton-bg: #e0e0e0;
+  --table-resize-handle-color: #ddd;
+  --table-resize-handle-active-color: #aaa;
+
+  --table-cell-padding: 0 5px;
+  --table-font-family: sans-serif;
+  --table-font-size: 14px;
+}
+
+.table-container {
+  position: relative;
+  height: 100%;
+  font-family: var(--table-font-family);
+  font-size: var(--table-font-size);
+  color: var(--table-text-color);
+  background-color: var(--table-bg);
+}
+
+.table-header {
+  display: flex;
+  align-items: center;
+  background-color: var(--table-header-bg);
+  border-bottom: var(--table-border-width) solid var(--table-border-color);
+  height: var(--table-line-height);
+  box-sizing: border-box;
+}
+
+.table-row {
+  display: flex;
+  align-items: center;
+  border-bottom: var(--table-border-width) solid var(--table-border-color);
+  height: var(--table-line-height);
+  box-sizing: border-box;
+}
+
+.table-row:hover {
+  background-color: var(--table-row-hover-bg);
+}
+
+.table-cell {
+  flex: 1;
+  padding: var(--table-cell-padding);
+}
+
+.skeleton-row {
+  padding: 3px;
+}
+
+.skeleton-row-inner {
+  background-color: var(--table-skeleton-bg);
+  border-radius: 5px;
+}
+
+.resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  background-color: var(--table-resize-handle-color);
+  user-select: none;
+  z-index: 10;
+}
+
+.resize-handle.is-resizing, .resize-handle:hover {
+  background-color: var(--table-resize-handle-active-color);
+}

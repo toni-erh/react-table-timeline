@@ -1,43 +1,60 @@
-import { useState } from "react";
-import { Table } from "./Table";
+import { useState } from 'react';
+import { Table } from './Table';
+import './Playground.css';
+import type { TableRowBase } from './types/tableTypes';
 
-const testRowCount = 20000
+// Mock Data
+const columns = ['id', 'name', 'age', 'city'];
 
-const columns = ["index", "id", "value"];
-const data = new Array(testRowCount).fill(true);
-const rows = data.map((_, i) => ({ index: i, id: i.toString(), value: '-', children: [{ index: i, id: i.toString() + '-1' }] }))
+// This interface must be compatible with TableRowBase
+interface Person extends TableRowBase {
+  id: string;
+  index: number; // Required by the virtualization logic
+  name: string;
+  age: number;
+  city: string;
+}
+
+const generateData = (count: number, depth: number, parentId: string = ''): Person[] => {
+  const data: Person[] = [];
+  for (let i = 1; i <= count; i++) {
+    const id = parentId !== '' ? parentId + '-' + i.toString() : i.toString();
+    data.push({
+      id,
+      index: i - 1, // Add the index property
+      name: `Person ${i}`,
+      age: Math.floor(Math.random() * 40) + 20,
+      city: `City ${i % 10}`,
+      ...(depth > 0 && i > 1 && i % 5 === 1 ? { children: generateData(5, depth - 1, id) } : {}),
+    });
+  }
+  return data;
+};
+
+const rows = generateData(100, 1);
 
 export default function Playground() {
-  const [loadedRows, setLoadedRows] = useState(
-    rows.slice(0, 10)
-  );
-  // const rows = [
-  //   { index: 0, id: "0", children: [{ index: 0, id: "0-0" }, { index: 1, id: "0-1" }] },
-  //   { index: 1, id: "1", children: [] },
-  //   { index: 2, id: "2", children: [{ index: 0, id: "2-0" }, { index: 1, id: "2-1" }] },
-  //   { index: 3, id: "3", children: [{ index: 0, id: "3-0" }, { index: 1, id: "3-1" }, { index: 2, id: "3-2" }] },
-  //   { index: 4, id: "4", children: [{ index: 0, id: "4-0" }, { index: 1, id: "4-1", children: [{ index: 0, id: "4-1-0" }, { index: 1, id: "4-1-1" }] }, { index: 2, id: "4-2" }, { index: 3, id: "4-3" }, { index: 4, id: "4-4" }] },
-  //   { index: 5, id: "5", children: [{ index: 0, id: "5-0" }, { index: 1, id: "5-1" }, { index: 2, id: "5-2" }] },
-  // ]
-  // React.useEffect(() => console.log("rows", loadedRows), [loadedRows])
+  const [isDark, setIsDark] = useState(false);
+
+  const themeClass = isDark ? 'dark-theme' : '';
 
   return (
-    <div style={{ padding: 32 }}>
-      <h2>Table Playground</h2>
-      <button onClick={() => {
-        setLoadedRows((old) => {
-          old[4].value = 'something';
-          return structuredClone(old)
-        })
-      }}>Change some value</button>
-      <div style={{ padding: 16, border: "3px solid #ccc", borderRadius: 8, height: 400 }}>
-        <Table
-          columns={columns} rows={loadedRows} rowCount={rows.length} rowVirtualizationMargin={0}
-          onRowRangeChange={(requestedRows) => {
-            setLoadedRows(rows.slice(requestedRows.firstFirstLevelIndex, requestedRows.lastFirstLevelIndex + 1))
-          }}
+    <div className={`playground-container ${themeClass}`}>
+      <h1>React Table Playground</h1>
+      <div className="playground-controls">
+        <button onClick={() => setIsDark(!isDark)}>
+          Toggle Dark Mode
+        </button>
+      </div>
+      <div className="table-wrapper">
+        <Table<Person>
+          rows={rows}
+          rowCount={rows.length}
+          columns={columns}
+          lineHeight={30}
+          defaultExpansionDepth={1}
         />
       </div>
     </div>
   );
-}
+};

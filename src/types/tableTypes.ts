@@ -8,6 +8,8 @@ export type TableSceletonRow = {
   __sceleton_row: true; 
 }
 
+export type PreparedRow<TableRow extends TableRowBase> = TableRow | TableSceletonRow;
+
 export type RowExpansions = { 
   [rowId: number]: RowExpansions; 
 }
@@ -24,7 +26,7 @@ export type RequestedRows = {
   rowExpansions: RowExpansions;
 }
 
-export interface TableProps<TableRow extends TableRowBase> {
+export interface TableProps<TableRow extends TableRowBase> extends React.HTMLAttributes<HTMLDivElement> {
   columns: string[];
   rows: Array<TableRow>;
   rowCount: number;

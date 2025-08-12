@@ -1,0 +1,37 @@
+body {
+  font-family: sans-serif;
+  padding: 20px;
+}
+
+.playground-container {
+  height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.playground-controls {
+  margin-bottom: 20px;
+}
+
+.table-wrapper {
+  flex-grow: 1;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Dark Theme */
+.dark-theme {
+  --table-bg: #2a2a2a;
+  --table-text-color: #f0f0f0;
+  --table-border-color: #444;
+  --table-header-bg: #333;
+  --table-row-hover-bg: #3c3c3c;
+  --table-skeleton-bg: #3f3f3f;
+  --table-resize-handle-color: #555;
+  --table-resize-handle-active-color: #888;
+}
+
+.dark-theme .table-wrapper {
+  border-color: #444;
+}
