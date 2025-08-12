@@ -16,7 +16,8 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   rowVirtualizationMargin = 5,
   defaultExpansionDepth,
   className,
-  style
+  style,
+  renderSkeletonRow,
 }: TableProps<TableRow>) => {
   // Use table expansion hook for tree functionality
   const {
@@ -58,7 +59,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
           maxWidth: 800,
           backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent calc(var(--table-line-height) - var(--table-border-width)), var(--table-border-color) var(--table-border-width), var(--table-border-color) var(--table-line-height))`
         }}>
-          <TableBody preparedRows={preparedRows} columns={columns} lineHeight={lineHeight} />
+          <TableBody preparedRows={preparedRows} columns={columns} lineHeight={lineHeight} renderSkeletonRow={renderSkeletonRow} />
         </div>
         <div
           style={{

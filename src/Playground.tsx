@@ -1,6 +1,28 @@
 import { useState } from 'react';
 import { Table } from './Table';
 import './Playground.css';
+
+// Custom Skeleton Row Component for demonstration
+const CustomSkeletonRow = () => (
+  <div
+    style={{
+      height: '100%',
+      width: '100%',
+      padding: '3px',
+      boxSizing: 'border-box',
+    }}
+  >
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        backgroundColor: '#e0e0e0',
+        borderRadius: '4px',
+        animation: 'pulse 1.5s infinite ease-in-out',
+      }}
+    />
+  </div>
+);
 import type { TableRowBase } from './types/tableTypes';
 
 // Mock Data
@@ -53,6 +75,7 @@ export default function Playground() {
           columns={columns}
           lineHeight={30}
           defaultExpansionDepth={1}
+          renderSkeletonRow={CustomSkeletonRow}
         />
       </div>
     </div>

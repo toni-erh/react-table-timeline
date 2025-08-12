@@ -34,4 +34,5 @@ export interface TableProps<TableRow extends TableRowBase> extends React.HTMLAtt
   lineHeight?: number;
   rowVirtualizationMargin?: number;
   defaultExpansionDepth?: number;
+  renderSkeletonRow?: () => React.ReactNode;
 }
