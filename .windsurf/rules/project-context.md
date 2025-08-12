@@ -23,9 +23,13 @@ description: When working on features
 - ✅ Zeilen Virtualization für Performance bei großen Datasets
 - ✅ Lazy Loading Mechanismus
 - ✅ Row Range Callbacks
+- ✅ Hierarchische Datenstruktur Display
+
+### Individuell konfigurierbares Erscheinungsbild
+- 🔄 Styling der Tabelle an sich
+- 🔄 Überschreiben der Basiskomponenten (z.B. Custom Sceleton Row)
 
 ### Tree Functionality (In Entwicklung)
-- 🔄 Hierarchische Datenstruktur Display
 - 🔄 Expand/Collapse Funktionalität
 - 🔄 Parent-Child Relationship Handling
 - 🔄 Nested Row Rendering

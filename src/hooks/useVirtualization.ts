@@ -54,7 +54,7 @@ export function useVirtualization<TableRow extends TableRowBase>(
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          setContainerScrollTop(container.scrollTop);
+          setContainerScrollTop(Math.floor(container.scrollTop / lineHeight) * lineHeight);
           setContainerClientHeight(container.clientHeight);
           ticking = false;
         });
@@ -66,7 +66,7 @@ export function useVirtualization<TableRow extends TableRowBase>(
     return () => {
       container.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [lineHeight]);
 
   React.useEffect(() => {
     if (containerScrollTop === undefined || containerClientHeight === undefined) return;
