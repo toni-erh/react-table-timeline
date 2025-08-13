@@ -26,8 +26,8 @@ description: When working on features
 - ✅ Hierarchische Datenstruktur Display
 
 ### Individuell konfigurierbares Erscheinungsbild
-- 🔄 Styling der Tabelle an sich
-- 🔄 Überschreiben der Basiskomponenten (z.B. Custom Sceleton Row)
+- ✅ Styling der Tabelle an sich
+- ✅ Überschreiben der Basiskomponenten (z.B. Custom Sceleton Row)
 
 ### Tree Functionality (In Entwicklung)
 - 🔄 Expand/Collapse Funktionalität

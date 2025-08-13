@@ -46,6 +46,7 @@
 
 .table-cell {
   flex: 1;
+  overflow: hidden;
   padding: var(--table-cell-padding);
 }
 

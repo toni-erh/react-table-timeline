@@ -7,8 +7,11 @@ describe('rowPreparation', () => {
   const mockRows: TableRowBase[] = [
     { index: 0, id: '0' },
     { index: 1, id: '1' },
+    { index: 0, id: '1-0' },
+    { index: 1, id: '1-1' },
     { index: 2, id: '2' },
     { index: 3, id: '3' },
+    { index: 0, id: '3-0' },
     { index: 4, id: '4' }
   ];
 
@@ -67,6 +70,9 @@ describe('rowPreparation', () => {
         const result = prepareVirtualizedRows(mockRows, 2, 0, 3, mockExpandedChildCounts);
         
         expect(result).toHaveLength(3);
+        expect(result[0]).toBe(mockRows[4]);
+        expect(result[1]).toBe(mockRows[5]);
+        expect(result[2]).toBe(mockRows[6]);
         // Should calculate offset based on expanded child counts and slice accordingly
       });
 
@@ -74,6 +80,8 @@ describe('rowPreparation', () => {
         const result = prepareVirtualizedRows(mockRows, 3, 1, 2, mockExpandedChildCounts);
         
         expect(result).toHaveLength(2);
+        expect(result[0]).toBe(mockRows[6]);
+        expect(result[1]).toBe(mockRows[7]);
         // Should account for expanded children when calculating offset
       });
     });
@@ -81,17 +89,24 @@ describe('rowPreparation', () => {
     describe('Case 3: First index after real index with skeleton rows', () => {
       it('should return all skeleton rows when offset > rowCountToRender', () => {
         // Create scenario where calculated offset exceeds rowCountToRender
-        const result = prepareVirtualizedRows(mockRows.slice(3), 0, 0, 2, []);
+        const result = prepareVirtualizedRows(mockRows.slice(5), 0, 0, 2, []);
         
         expect(result).toHaveLength(2);
         expect(result.every(row => '__sceleton_row' in row)).toBe(true);
       });
 
       it('should mix skeleton rows and data rows', () => {
+        const rows = [{ index: 0, id: '0' }, { index: 1, id: '1' }, { index: 2, id: '2' }, { index: 3, id: '3' }]
         // Test scenario where we need skeleton rows at the beginning
-        const result = prepareVirtualizedRows(mockRows.slice(2), 1, 0, 4, []);
+        const result = prepareVirtualizedRows(rows.slice(2), 0, 0, 4, []);
         
         expect(result).toHaveLength(4);
+        expect(result).toEqual([
+          { __sceleton_row: true },
+          { __sceleton_row: true },
+          rows[2],
+          rows[3]
+        ]);
         // Should have some skeleton rows followed by data rows
       });
 

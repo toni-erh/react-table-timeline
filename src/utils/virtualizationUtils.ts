@@ -103,7 +103,8 @@ export function getFirstLevelIndexAndOffset(
 }
 
 /**
- * Calculates the row count within a specified range considering expanded children
+ * Calculates the row count within a specified range considering expanded children.
+ * Includes children of the first and last index.
  */
 export function getRowCountInRange(
   expandedChildCounts: ExpandedChildCounts, 

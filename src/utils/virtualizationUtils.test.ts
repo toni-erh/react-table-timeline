@@ -120,6 +120,14 @@ describe('virtualizationUtils', () => {
       expect(offset).toBe(0);
       // expect(lastIndex).toBe(1); // 2 + 0 - 1, but should be reasonable
     });
+
+    it('should handle flat index after expanded children', () => {
+      const [index, offset, lastIndex] = getFirstLevelIndexAndOffset(7, mockExpandedChildCounts, 10, 20);
+      
+      expect(index).toBe(4);
+      expect(offset).toBe(0);
+      expect(lastIndex).toBe(10);
+    })
   });
 
   describe('edge cases', () => {
