@@ -24,6 +24,14 @@ export type RequestedRows = {
   rowExpansions: RowExpansions;
 }
 
+export type RenderExpanderParams<TableRow extends TableRowBase> = {
+  expanded: boolean;
+  hasChildren: boolean;
+  toggle: () => void;
+  level: number;
+  row: TableRow;
+}
+
 export interface TableProps<TableRow extends TableRowBase> extends React.HTMLAttributes<HTMLDivElement> {
   columns: string[];
   rows: Array<TableRow>;
@@ -33,4 +41,5 @@ export interface TableProps<TableRow extends TableRowBase> extends React.HTMLAtt
   rowVirtualizationMargin?: number;
   defaultExpansionDepth?: number;
   renderSkeletonRow?: () => React.ReactNode;
+  renderExpander?: (params: RenderExpanderParams<TableRow>) => React.ReactNode;
 }

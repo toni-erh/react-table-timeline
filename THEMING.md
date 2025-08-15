@@ -25,6 +25,7 @@ The easiest way to theme the table is by overriding the default CSS variables. Y
 | `--table-resize-handle-color`        | `#cccccc`     | Color of the column resize handle.                             |
 | `--table-resize-handle-active-color` | `#a0a0a0`     | Color of the resize handle when active or hovered.             |
 | `--table-skeleton-bg-color`          | `#e0e0e0`     | Base color for the default skeleton loading animation.         |
+| `--tree-indent-step`                 | `12px`        | The indentation step for hierarchical rows.                      |
 
 ### Example: Dark Theme
 

@@ -80,3 +80,14 @@ export function flattenExpanded(
     ...row.children.flatMap(child => flattenExpanded(child, expansions))
   ];
 }
+
+export function toggleExpansion(expansions: RowExpansions, rowId: string): RowExpansions {
+  const expansion = expansions.get(rowId);
+  if (!expansion) return expansions;
+  
+  return new Map(expansions).set(rowId, {
+    ...expansion,
+    isExpanded: !expansion.isExpanded
+  });
+}
+

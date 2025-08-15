@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { 
   generateInitialExpansions, 
   getExpandedChildCount, 
-  flattenExpanded 
+  flattenExpanded, 
+  toggleExpansion
 } from './treeUtils';
 import type { TableRowBase } from '../types/tableTypes';
 
@@ -144,6 +145,20 @@ describe('treeUtils', () => {
         mockRows[0]!.children![0]!.children![1]!.children![0],
         mockRows[0]!.children![1],
       ]);
+    });
+
+    describe('toggleExpansion', () => {
+      it('should toggle expansion state', () => {
+        const expansions = new Map();
+        expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
+        expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
+        expansions.set('0-0-0', { isExpanded: false, childrenIds: [], parentId: '0-0' });
+        expansions.set('0-0-1', { isExpanded: true, childrenIds: ['0-0-1-0'], parentId: '0-0' });
+        expansions.set('0-1', { isExpanded: false, childrenIds: [], parentId: '0' });
+        
+        const result = toggleExpansion(expansions, '0-0');
+        expect(result.get('0-0')?.isExpanded).toBe(false);
+      });
     });
   });
 });

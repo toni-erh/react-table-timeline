@@ -3,22 +3,22 @@ import type { TableRowBase, RowExpansions, ExpandedChildCounts } from '../types/
 import { generateInitialExpansions, flattenExpanded } from '../utils/treeUtils';
 import { updateExpandedChildCounts, calculateExpandedRowCount, calculateExpandedChildCounts } from '../utils/expansionUtils';
 
-interface UseTreeExpansionReturn {
+interface UseTreeExpansionReturn<TableRow extends TableRowBase> {
   rowExpansions: RowExpansions;
   setRowExpansions: React.Dispatch<React.SetStateAction<RowExpansions>>;
   expandedChildCounts: ExpandedChildCounts;
   expandedRowCount: number;
-  flatRows: TableRowBase[];
+  flatRows: TableRow[];
 }
 
 /**
  * Hook for managing table row expansion state and calculations
  */
-export function useTreeExpansion(
-  rows: TableRowBase[],
+export function useTreeExpansion<TableRow extends TableRowBase>(
+  rows: TableRow[],
   rowCount: number,
   defaultExpansionDepth?: number
-): UseTreeExpansionReturn {
+): UseTreeExpansionReturn<TableRow> {
   // For tracking which rows are expanded
   const [rowExpansions, setRowExpansions] = React.useState<RowExpansions>(() => 
     generateInitialExpansions(rows, defaultExpansionDepth)
@@ -49,6 +49,6 @@ export function useTreeExpansion(
     setRowExpansions,
     expandedChildCounts,
     expandedRowCount,
-    flatRows
+    flatRows: flatRows as TableRow[]
   };
 }
