@@ -10,9 +10,7 @@ export type TableSceletonRow = {
 
 export type PreparedRow<TableRow extends TableRowBase> = TableRow | TableSceletonRow;
 
-export type RowExpansions = { 
-  [rowId: number]: RowExpansions; 
-}
+export type RowExpansions = Map<string, { isExpanded: boolean, childrenIds: string[], parentId: string | undefined }>
 
 export type ExpandedChildCounts = { 
   index: number; 

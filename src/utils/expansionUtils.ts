@@ -8,21 +8,24 @@ export function calculateExpandedChildCounts(
   rows: TableRowBase[],
   rowExpansions: RowExpansions
 ): ExpandedChildCounts {
-  return rows.reduce(
-    (state, cur) => {
-      if (cur.children?.length) {
-        const childCount = getExpandedChildCount(cur.children, rowExpansions[cur.index]);
-        if (childCount) {
-          return state.concat({
-            index: cur.index,
-            rowCount: childCount
-          });
-        }
-      }
-      return state;
-    },
-    [] as ExpandedChildCounts
-  );
+  const result: ExpandedChildCounts = [];
+  
+  rows.forEach((row) => {
+    if (!row.children?.length) return;
+    
+    const expansion = rowExpansions.get(row.id);
+    if (!expansion || !expansion.isExpanded) return;
+    
+    const childCount = getExpandedChildCount(row.children, rowExpansions);
+    if (childCount > 0) {
+      result.push({
+        index: row.index,
+        rowCount: childCount
+      });
+    }
+  });
+  
+  return result;
 }
 
 /**
@@ -50,26 +53,38 @@ export function updateExpandedChildCounts(
     while (!next.done && next.value.index < row.index) {
       next = iterator.next();
     }
+    
     if (row.children?.length) {
-      const childCount = getExpandedChildCount(row.children, rowExpansions[row.index]);
-      if (!hasChanged && next.value?.index === row.index && next.value.rowCount !== childCount) {
+      const expansion = rowExpansions.get(row.id);
+      const childCount = expansion?.isExpanded 
+        ? getExpandedChildCount(row.children, rowExpansions)
+        : 0;
+      
+      // Check if the child count has changed
+      if (next.value?.index === row.index) {
+        if (next.value.rowCount !== childCount) {
+          hasChanged = true;
+          if (childCount > 0) {
+            updatedChildCounts.push({
+              index: row.index,
+              rowCount: childCount
+            });
+          }
+        } else {
+          updatedChildCounts.push(next.value);
+        }
+        next = iterator.next();
+      } else if (childCount > 0) {
+        // New row with children
         hasChanged = true;
-      }
-      if (childCount) {
         updatedChildCounts.push({
           index: row.index,
           rowCount: childCount
         });
-        if (!hasChanged && next.value?.index !== row.index) {
-          hasChanged = true;
-        }
       }
-    } else {
-      if (!hasChanged && next.value?.index === row.index && next.value.rowCount !== 0) {
-        hasChanged = true;
-      }
-    }
-    if (!next.done && next.value.index <= row.index) {
+    } else if (next.value?.index === row.index) {
+      // Row no longer has children
+      hasChanged = true;
       next = iterator.next();
     }
   });

@@ -26,7 +26,7 @@ const CustomSkeletonRow = () => (
 import type { TableRowBase } from './types/tableTypes';
 
 // Mock Data
-const columns = ['id', 'name', 'age', 'city'];
+const columns = ['index', 'id', 'name', 'age', 'city'];
 
 // This interface must be compatible with TableRowBase
 interface Person extends TableRowBase {
@@ -73,8 +73,10 @@ export default function Playground() {
           rows={rows}
           rowCount={rows.length}
           columns={columns}
+          // onRowRangeChange={(requestedRows) => console.log(`Rows ${requestedRows.firstFirstLevelIndex} to ${requestedRows.lastFirstLevelIndex} are visible`, requestedRows.rowExpansions)}
           lineHeight={30}
           defaultExpansionDepth={1}
+          rowVirtualizationMargin={0}
           renderSkeletonRow={CustomSkeletonRow}
         />
       </div>

@@ -28,7 +28,7 @@ export function useTreeExpansion(
   const [expandedChildCounts, setExpandedChildCounts] = React.useState<ExpandedChildCounts>(() => 
     calculateExpandedChildCounts(rows, rowExpansions)
   );
-
+  
   React.useEffect(() => {
     setExpandedChildCounts((prev) => updateExpandedChildCounts(prev, rows, rowExpansions));
   }, [rows, rowExpansions]);
@@ -40,7 +40,7 @@ export function useTreeExpansion(
 
   // flattens the rows with expanded children
   const flatRows = React.useMemo(
-    () => rows.flatMap((row) => flattenExpanded(row, rowExpansions[row.index])), 
+    () => rows.flatMap((row) => flattenExpanded(row, rowExpansions)), 
     [rows, rowExpansions]
   );
 

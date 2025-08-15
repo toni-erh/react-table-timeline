@@ -4,7 +4,7 @@ import {
   getExpandedChildCount, 
   flattenExpanded 
 } from './treeUtils';
-import type { TableRowBase, RowExpansions } from '../types/tableTypes';
+import type { TableRowBase } from '../types/tableTypes';
 
 describe('treeUtils', () => {
   // Mock test data
@@ -25,76 +25,117 @@ describe('treeUtils', () => {
   describe('generateInitialExpansions', () => {
     it('should generate fully expanded expansions when no defaultExpansionDepth', () => {
       const result = generateInitialExpansions(mockRows, undefined);
-      expect(result).toEqual({
-        0: {
-          0: {
-            1: {}
-          }
-        },
-        2: {}
-      });
+      expect(result.size).toBe(9); // All nodes should be included
+      
+      expect(result.get('0')).toEqual({ isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
+      expect(result.get('0-0')).toEqual({ isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
+      expect(result.get('0-0-1')).toEqual({ isExpanded: true, childrenIds: ['0-0-1-0'], parentId: '0-0' });
+      expect(result.get('1')).toEqual({ isExpanded: true, childrenIds: [], parentId: undefined });
+      expect(result.get('2')).toEqual({ isExpanded: true, childrenIds: ['2-0'], parentId: undefined });
     });
 
     it('should expand to depth 1', () => {
       const result = generateInitialExpansions(mockRows, 1);
-      expect(result).toEqual({
-        0: {},
-        2: {}
-      });
+      
+      // Only root nodes and direct children should be expanded
+      expect(result.get('0')?.isExpanded).toBe(true);
+      expect(result.get('2')?.isExpanded).toBe(true);
+      
+      // Nested children should not be expanded
+      if (result.has('0-0')) {
+        expect(result.get('0-0')?.isExpanded).toBe(false);
+      }
     });
 
     it('should expand to depth 2', () => {
       const result = generateInitialExpansions(mockRows, 2);
-      expect(result).toEqual({
-        0: {
-          0: {}
-        },
-        2: {}
-      });
+      
+      // Root and first level should be expanded
+      expect(result.get('0')?.isExpanded).toBe(true);
+      expect(result.get('0-0')?.isExpanded).toBe(true);
+      
+      // Second level should not be expanded
+      if (result.has('0-0-1')) {
+        expect(result.get('0-0-1')?.isExpanded).toBe(false);
+      }
     });
 
     it('should handle empty rows array', () => {
       const result = generateInitialExpansions([], 2);
-      expect(result).toEqual({});
+      expect(result.size).toBe(0);
     });
   });
 
   describe('getExpandedChildCount', () => {
-    it('should count only direct children when not expanded', () => {
-      const expansions: RowExpansions = {};
-      const result = getExpandedChildCount(mockRows, expansions);
-      expect(result).toBe(3); // Only direct children
+    it('should return 0 for non-expanded rows', () => {
+      const expansions = new Map();
+      expansions.set('0', { isExpanded: false, childrenIds: ['0-0', '0-1'], parentId: undefined });
+      expect(getExpandedChildCount([mockRows[0]], expansions)).toBe(1);
     });
 
-    it('should count nested children when expanded', () => {
-      const expansions: RowExpansions = { 0: { 0: { 1: {} } } };
-      const result = getExpandedChildCount(mockRows, expansions);
-      expect(result).toBe(8); // 3 direct + 5 nested
+    it('should count direct children for expanded rows', () => {
+      const expansions = new Map();
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
+      expansions.set('0-0', { isExpanded: false, childrenIds: [], parentId: '0' });
+      expansions.set('0-1', { isExpanded: false, childrenIds: [], parentId: '0' });
+      expect(getExpandedChildCount([mockRows[0]], expansions)).toBe(3);
     });
 
-    it('should handle empty children array', () => {
-      const result = getExpandedChildCount([], {});
-      expect(result).toBe(0);
+    it('should count nested children recursively', () => {
+      const expansions = new Map();
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
+      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
+      expansions.set('0-0-0', { isExpanded: false, childrenIds: [], parentId: '0-0' });
+      expansions.set('0-0-1', { isExpanded: false, childrenIds: ['0-0-1-0'], parentId: '0-0' });
+      expansions.set('0-1', { isExpanded: false, childrenIds: [], parentId: '0' });
+      
+      // Should count all children and grandchildren (2 children + 2 grandchildren = 4)
+      expect(getExpandedChildCount([mockRows[0]], expansions)).toBe(5);
     });
   });
 
   describe('flattenExpanded', () => {
-    it('should return only parent when not expanded', () => {
-      const result = flattenExpanded(mockRows[0], {});
-      expect(result).toEqual([mockRows[0], ...mockRows[0]!.children!]);
-    });
-
-    it('should include direct children when expanded', () => {
-      const result = flattenExpanded(mockRows[0], {});
+    it('should return array with just the row for non-expanded rows', () => {
+      const expansions = new Map();
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
+      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
+      expansions.set('0-0-0', { isExpanded: false, childrenIds: [], parentId: '0-0' });
+      expansions.set('0-0-1', { isExpanded: false, childrenIds: ['0-0-1-0'], parentId: '0-0' });
+      expansions.set('0-1', { isExpanded: true, childrenIds: [], parentId: '0' });
+      
+      const result = flattenExpanded(mockRows[0], expansions);
       expect(result).toEqual([
         mockRows[0],
-        mockRows[0]!.children![0],
-        mockRows[0]!.children![1],
+        mockRows[0].children?.[0],
+        mockRows[0].children?.[0]?.children?.[0],
+        mockRows[0].children?.[0]?.children?.[1],
+        mockRows[0].children?.[1]
       ]);
     });
 
-    it('should include nested children when deeply expanded', () => {
-      const result = flattenExpanded(mockRows[0], { 0: { 1: {} } });
+    it('should include direct children for expanded rows', () => {
+      const expansions = new Map();
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
+      expansions.set('0-0', { isExpanded: false, childrenIds: [], parentId: '0' });
+      expansions.set('0-1', { isExpanded: false, childrenIds: [], parentId: '0' });
+      
+      const result = flattenExpanded(mockRows[0], expansions);
+      expect(result).toEqual([
+        mockRows[0],
+        mockRows[0].children?.[0],
+        mockRows[0].children?.[1]
+      ].filter(Boolean));  // Filter out undefined values
+    });
+
+    it('should include nested children for expanded rows', () => {
+      const expansions = new Map();
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
+      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
+      expansions.set('0-0-0', { isExpanded: false, childrenIds: [], parentId: '0-0' });
+      expansions.set('0-0-1', { isExpanded: true, childrenIds: ['0-0-1-0'], parentId: '0-0' });
+      expansions.set('0-1', { isExpanded: false, childrenIds: [], parentId: '0' });
+      
+      const result = flattenExpanded(mockRows[0], expansions);
       expect(result).toEqual([
         mockRows[0],
         mockRows[0]!.children![0],

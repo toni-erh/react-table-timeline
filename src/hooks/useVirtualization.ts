@@ -98,10 +98,11 @@ export function useVirtualization<TableRow extends TableRowBase>(
   // Notify parent about the range of rows to render
   React.useEffect(() => {
     if (firstRealIndex === undefined || lastRealIndex === undefined) return;
+    
     onRowRangeChange?.({
       firstFirstLevelIndex: firstRealIndex,
       lastFirstLevelIndex: lastRealIndex,
-      firstLevelRowCount: lastRealIndex - firstRealIndex,
+      firstLevelRowCount: lastRealIndex - firstRealIndex + 1,
       rowExpansions,
     });
   }, [firstRealIndex, lastRealIndex]);

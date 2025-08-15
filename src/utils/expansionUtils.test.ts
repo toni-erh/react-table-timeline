@@ -24,7 +24,9 @@ describe('expansionUtils', () => {
 
   describe('calculateExpandedChildCounts', () => {
     it('should calculate child counts for expanded rows', () => {
-      const expansions: RowExpansions = { 0: {}, 2: {} };
+      const expansions: RowExpansions = new Map();
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
+      expansions.set('2', { isExpanded: true, childrenIds: ['2-0'], parentId: undefined });
       const result = calculateExpandedChildCounts(mockRows, expansions);
       
       expect(result).toEqual([
@@ -34,7 +36,9 @@ describe('expansionUtils', () => {
     });
 
     it('should include nested children when deeply expanded', () => {
-      const expansions: RowExpansions = { 0: { 0: {} } };
+      const expansions: RowExpansions = new Map();
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
+      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
       const result = calculateExpandedChildCounts(mockRows, expansions);
       
       expect(result).toEqual([
@@ -43,12 +47,12 @@ describe('expansionUtils', () => {
     });
 
     it('should return empty array when no expansions', () => {
-      const result = calculateExpandedChildCounts(mockRows, {});
+      const result = calculateExpandedChildCounts(mockRows, new Map());
       expect(result).toEqual([]);
     });
 
     it('should handle empty rows array', () => {
-      const result = calculateExpandedChildCounts([], { 0: { 0: {} } });
+      const result = calculateExpandedChildCounts([], new Map());
       expect(result).toEqual([]);
     });
 
@@ -57,8 +61,11 @@ describe('expansionUtils', () => {
         { index: 0, id: '0' },
         { index: 1, id: '1' }
       ];
+      const expansions: RowExpansions = new Map();
+      expansions.set('0', { isExpanded: true, childrenIds: [], parentId: undefined });
+      expansions.set('0-0', { isExpanded: true, childrenIds: [], parentId: '0' });
       
-      const result = calculateExpandedChildCounts(rowsWithoutChildren, { 0: { 0: {} } });
+      const result = calculateExpandedChildCounts(rowsWithoutChildren, expansions);
       expect(result).toEqual([]);
     });
 
@@ -67,8 +74,11 @@ describe('expansionUtils', () => {
         { index: 0, id: '0', children: [] },
         { index: 1, id: '1', children: [{ index: 2, id: '1-0' }] }
       ];
+      const expansions: RowExpansions = new Map();
+      expansions.set('1', { isExpanded: true, childrenIds: ['1-0'], parentId: undefined });
+      expansions.set('1-0', { isExpanded: true, childrenIds: [], parentId: '1' });
       
-      const result = calculateExpandedChildCounts(rowsWithEmptyChildren, { 1: { 0: {} } });
+      const result = calculateExpandedChildCounts(rowsWithEmptyChildren, expansions);
       expect(result).toEqual([
         { index: 1, rowCount: 1 }
       ]);
@@ -81,7 +91,9 @@ describe('expansionUtils', () => {
         { index: 0, rowCount: 2 },
         { index: 6, rowCount: 1 }
       ];
-      const expansions: RowExpansions = { 0: { 0: {} }, 6: {} }; // Now row 1 is deeply expanded
+      const expansions: RowExpansions = new Map();
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
+      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
       
       const result = updateExpandedChildCounts(prevCounts, mockRows, expansions);
       
@@ -95,7 +107,9 @@ describe('expansionUtils', () => {
       const prevCounts: ExpandedChildCounts = [
         { index: 0, rowCount: 4 }
       ];
-      const expansions: RowExpansions = { 0: { 0: {} } };
+      const expansions: RowExpansions = new Map();
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
+      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
       
       const result = updateExpandedChildCounts(prevCounts, mockRows, expansions);
       
@@ -106,7 +120,10 @@ describe('expansionUtils', () => {
       const prevCounts: ExpandedChildCounts = [
         { index: 0, rowCount: 4 }
       ];
-      const expansions: RowExpansions = { 0: { 0: {} }, 2: {} };
+      const expansions: RowExpansions = new Map();
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
+      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
+      expansions.set('2', { isExpanded: true, childrenIds: ['2-0'], parentId: undefined });
       
       const result = updateExpandedChildCounts(prevCounts, mockRows, expansions);
       
@@ -121,7 +138,9 @@ describe('expansionUtils', () => {
         { index: 0, rowCount: 4 },
         { index: 2, rowCount: 1 }
       ];
-      const expansions: RowExpansions = { 0: {} }; // Row 6 no longer expanded
+      const expansions: RowExpansions = new Map();
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
+      expansions.set('2', { isExpanded: false, childrenIds: ['2-0'], parentId: undefined });
       
       const result = updateExpandedChildCounts(prevCounts, mockRows, expansions);
       
