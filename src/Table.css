@@ -13,6 +13,8 @@
   --table-font-family: sans-serif;
   --table-font-size: 14px;
   --tree-indent-step: 12px;
+  --tree-indent-level: 0;
+  --tree-expander-width: 24px;
 }
 
 .table-container {
@@ -45,6 +47,24 @@
   background-color: var(--table-row-hover-bg);
 }
 
+.table-row-expander {
+  width: calc(var(--tree-indent-step) * var(--tree-indent-level) + var(--tree-expander-width));
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
+  padding-right: 8px;
+}
+
+.table-row-expander-button {
+  color: var(--table-text-color);
+  text-align: center;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  user-select: none;
+}
+
 .table-cell {
   flex: 1;
   overflow: hidden;
@@ -71,6 +91,7 @@
   z-index: 10;
 }
 
-.resize-handle.is-resizing, .resize-handle:hover {
+.resize-handle.is-resizing,
+.resize-handle:hover {
   background-color: var(--table-resize-handle-active-color);
 }
