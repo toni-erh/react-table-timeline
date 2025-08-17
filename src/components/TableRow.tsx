@@ -2,6 +2,7 @@ import React from 'react';
 import type { TableRowBase, RenderExpanderParams, RowReorderEvent, RowReorderPlacement } from '../types/tableTypes';
 import { TableCell } from './TableCell';
 import { useRowExpansion } from '../context/RowExpansionContext';
+import { getPath } from '../utils/treeUtils';
 
 interface TableRowProps<T extends TableRowBase> {
   row: T;
@@ -24,17 +25,6 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
   const [dragOverAllowed, setDragOverAllowed] = React.useState<boolean | null>(null);
 
   // helpers
-  const getPath = React.useCallback((id: string): string[] => {
-    const path: string[] = [];
-    let current: string | undefined = id;
-    while (current) {
-      path.push(current);
-      const parentId: string | undefined = rowExpansions.get(current)?.parentId;
-      current = parentId;
-    }
-    return path.reverse();
-  }, [rowExpansions]);
-
   const getIndexWithinParent = React.useCallback((id: string): number => {
     const parentId = rowExpansions.get(id)?.parentId;
     if (!parentId) return -1; // root sentinel
@@ -74,8 +64,8 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
     const sourceParentId = rowExpansions.get(sourceId)?.parentId;
     const targetParentId = rowExpansions.get(targetId)?.parentId;
 
-    const sourcePath = getPath(sourceId);
-    const targetPath = getPath(targetId);
+    const sourcePath = getPath(rowExpansions, sourceId);
+    const targetPath = getPath(rowExpansions, targetId);
 
     const event: RowReorderEvent = {
       sourceId,
@@ -92,8 +82,8 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
         placement === 'inside'
           ? [...targetPath]
           : (targetParentId
-              ? getPath(targetParentId)
-              : targetPath.slice(0, Math.max(0, targetPath.length - 1))),
+            ? getPath(rowExpansions, targetParentId)
+            : targetPath.slice(0, Math.max(0, targetPath.length - 1))),
       siblingIndex: placement === 'inside' ? 0 : undefined,
       ...getSiblingNeighbors(targetId),
       isSameParentMove: (sourceParentId ?? null) === (placement === 'inside' ? targetId : targetParentId ?? null),
@@ -128,8 +118,8 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
     const targetId = row.id;
     const sourceParentId = rowExpansions.get(sourceId)?.parentId;
     const targetParentId = rowExpansions.get(targetId)?.parentId;
-    const sourcePath = getPath(sourceId);
-    const targetPath = getPath(targetId);
+    const sourcePath = getPath(rowExpansions, sourceId);
+    const targetPath = getPath(rowExpansions, targetId);
 
     const preview: RowReorderEvent = {
       sourceId,
@@ -146,8 +136,8 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
         placement === 'inside'
           ? [...targetPath]
           : (targetParentId
-              ? getPath(targetParentId)
-              : targetPath.slice(0, Math.max(0, targetPath.length - 1))),
+            ? getPath(rowExpansions, targetParentId)
+            : targetPath.slice(0, Math.max(0, targetPath.length - 1))),
       siblingIndex: placement === 'inside' ? 0 : undefined,
       ...getSiblingNeighbors(targetId),
       isSameParentMove: (sourceParentId ?? null) === (placement === 'inside' ? targetId : targetParentId ?? null),

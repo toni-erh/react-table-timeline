@@ -58,6 +58,8 @@ const rows = generateData(100, 1);
 export default function Playground() {
   const [isDark, setIsDark] = useState(false);
 
+  const [loadedRows, setLoadedRows] = useState<typeof rows>([]) // rows.slice(0, 10));
+
   const themeClass = isDark ? 'dark-theme' : '';
 
   return (
@@ -70,10 +72,11 @@ export default function Playground() {
       </div>
       <div className="table-wrapper">
         <Table<Person>
-          rows={rows}
+          rows={loadedRows}
           rowCount={rows.length}
           columns={columns}
           // onRowRangeChange={(requestedRows) => console.log(`Rows ${requestedRows.firstFirstLevelIndex} to ${requestedRows.lastFirstLevelIndex} are visible`, requestedRows.rowExpansions)}
+          onRowRangeChange={({ firstFirstLevelIndex, lastFirstLevelIndex }) => setLoadedRows(rows.slice(firstFirstLevelIndex, lastFirstLevelIndex))}
           lineHeight={30}
           defaultExpansionDepth={1}
           rowVirtualizationMargin={0}

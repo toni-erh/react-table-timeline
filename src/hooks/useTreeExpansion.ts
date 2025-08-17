@@ -1,6 +1,6 @@
 import React from 'react';
 import type { TableRowBase, RowExpansions, ExpandedChildCounts } from '../types/tableTypes';
-import { generateInitialExpansions, flattenExpanded } from '../utils/treeUtils';
+import { generateInitialExpansions, flattenExpanded, updateExpansions } from '../utils/treeUtils';
 import { updateExpandedChildCounts, calculateExpandedRowCount, calculateExpandedChildCounts } from '../utils/expansionUtils';
 
 interface UseTreeExpansionReturn<TableRow extends TableRowBase> {
@@ -20,27 +20,32 @@ export function useTreeExpansion<TableRow extends TableRowBase>(
   defaultExpansionDepth?: number
 ): UseTreeExpansionReturn<TableRow> {
   // For tracking which rows are expanded
-  const [rowExpansions, setRowExpansions] = React.useState<RowExpansions>(() => 
+  const [rowExpansions, setRowExpansions] = React.useState<RowExpansions>(() =>
     generateInitialExpansions(rows, defaultExpansionDepth)
   );
 
   // For easy counting of rows before and after visible rows
-  const [expandedChildCounts, setExpandedChildCounts] = React.useState<ExpandedChildCounts>(() => 
+  const [expandedChildCounts, setExpandedChildCounts] = React.useState<ExpandedChildCounts>(() =>
     calculateExpandedChildCounts(rows, rowExpansions)
   );
-  
+
   React.useEffect(() => {
+    setRowExpansions((prev) => updateExpansions(prev, rows));
+  }, [rows]);
+
+  React.useEffect(() => {
+    console.log(rowExpansions)
     setExpandedChildCounts((prev) => updateExpandedChildCounts(prev, rows, rowExpansions));
-  }, [rows, rowExpansions]);
+  }, [rowExpansions]);
 
   const expandedRowCount = React.useMemo(
-    () => calculateExpandedRowCount(rowCount, expandedChildCounts), 
+    () => calculateExpandedRowCount(rowCount, expandedChildCounts),
     [rowCount, expandedChildCounts]
   );
 
   // flattens the rows with expanded children
   const flatRows = React.useMemo(
-    () => rows.flatMap((row) => flattenExpanded(row, rowExpansions)), 
+    () => rows.flatMap((row) => flattenExpanded(row, rowExpansions)),
     [rows, rowExpansions]
   );
 

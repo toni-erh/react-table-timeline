@@ -1,13 +1,13 @@
 import React from 'react';
-import type { 
-  TableRowBase, 
-  TableSceletonRow, 
-  ExpandedChildCounts, 
-  RowExpansions, 
-  RequestedRows 
+import type {
+  TableRowBase,
+  TableSceletonRow,
+  ExpandedChildCounts,
+  RowExpansions,
+  RequestedRows
 } from '../types/tableTypes';
-import { 
-  getFirstLevelIndexAndOffset 
+import {
+  getFirstLevelIndexAndOffset
 } from '../utils/virtualizationUtils';
 import { calculateVisibleRowRange } from '../utils/scrollCalculations';
 import { prepareVirtualizedRows } from '../utils/rowPreparation';
@@ -78,16 +78,16 @@ export function useVirtualization<TableRow extends TableRowBase>(
       rowVirtualizationMargin,
       flatRowCount
     );
-    
+
     if (firstRenderedIndex === firstFlatIndex && rowCountToRender === newRowCountToRender) return;
 
     const [initialFirstRealIndex, initialOffset, initialLastRealIndex] = getFirstLevelIndexAndOffset(
-      firstFlatIndex, 
-      expandedChildCounts, 
-      newRowCountToRender, 
+      firstFlatIndex,
+      expandedChildCounts,
+      newRowCountToRender,
       rowCount
     );
-    
+
     setFirstRenderedIndex(firstFlatIndex);
     setRowCountToRender(newRowCountToRender);
     setFirstRealIndex(initialFirstRealIndex);
@@ -98,10 +98,11 @@ export function useVirtualization<TableRow extends TableRowBase>(
   // Notify parent about the range of rows to render
   React.useEffect(() => {
     if (firstRealIndex === undefined || lastRealIndex === undefined) return;
-    
+
     onRowRangeChange?.({
       firstFirstLevelIndex: firstRealIndex,
-      lastFirstLevelIndex: lastRealIndex,
+      // TODO: check last real index calculation
+      lastFirstLevelIndex: lastRealIndex + 1,
       firstLevelRowCount: lastRealIndex - firstRealIndex + 1,
       rowExpansions,
     });

@@ -21,7 +21,7 @@ export function prepareVirtualizedRows<TableRow extends TableRowBase>(
   // Case 1: Direct slice when indices match
   if (firstRealIndex === firstIndex) {
     const rowSection: (TableRow | TableSceletonRow)[] = rows.slice(
-      offsetToFirstRealIndex, 
+      offsetToFirstRealIndex,
       offsetToFirstRealIndex + rowCountToRender
     );
     rowSection.push(...Array<TableSceletonRow>(rowCountToRender - rowSection.length).fill({ __sceleton_row: true }));
@@ -37,20 +37,20 @@ export function prepareVirtualizedRows<TableRow extends TableRowBase>(
   }
 
   // Case 3: First index is after real index - handle with skeleton rows
-  const offset = getRowCountInRange(expandedChildCounts, firstRealIndex, firstIndex - 1) - offsetToFirstRealIndex;
-  
+  const offset = getRowCountInRange(expandedChildCounts, firstRealIndex, firstIndex) - 1 - offsetToFirstRealIndex;
+
   if (offset > rowCountToRender) {
     return Array<TableSceletonRow>(rowCountToRender).fill({ __sceleton_row: true });
   }
-  
+
   const rowSection = [
-    ...Array<TableSceletonRow>(offset).fill({ __sceleton_row: true }), 
+    ...Array<TableSceletonRow>(offset).fill({ __sceleton_row: true }),
     ...rows.slice(0, rowCountToRender - offset)
   ];
-  
+
   if (rowSection.length < rowCountToRender) {
     rowSection.push(...Array<TableSceletonRow>(rowCountToRender - rowSection.length).fill({ __sceleton_row: true }));
   }
-  
+
   return rowSection;
 }

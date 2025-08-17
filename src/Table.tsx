@@ -43,7 +43,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
     rowExpansions,
     onRowRangeChange
   );
-  
+
   // Use column resize hook
   const { leftWidth, isResizing, handleMouseDown } = useColumnResize(scrollContainerRef, 300);
 
@@ -88,10 +88,10 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
           >
           </div>
         </div>
-        <ResizeHandle 
-          isResizing={isResizing} 
-          leftWidth={leftWidth} 
-          handleMouseDown={handleMouseDown} 
+        <ResizeHandle
+          isResizing={isResizing}
+          leftWidth={leftWidth}
+          handleMouseDown={handleMouseDown}
         />
       </div>
     </RowExpansionProvider>

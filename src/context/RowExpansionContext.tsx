@@ -14,11 +14,11 @@ export interface RowExpansionContextValue {
 
 const defaultValue: RowExpansionContextValue = {
   rowExpansions: new Map<string, { isExpanded: boolean; childrenIds: string[]; parentId: string | undefined }>(),
-  setRowExpansions: () => {},
+  setRowExpansions: () => { },
   isExpanded: () => false,
-  toggle: () => {},
-  expand: () => {},
-  collapse: () => {},
+  toggle: () => { },
+  expand: () => { },
+  collapse: () => { },
   getLevel: () => 0,
 };
 
