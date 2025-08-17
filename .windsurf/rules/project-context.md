@@ -35,8 +35,12 @@ description: When working on features
 - ✅ Nested Row Rendering
 - ✅ Zusammenspiel mit Lazy Loading und Virtualization
 
-### In Progress
-- 🔄️ Drag & Drop für Zeilenumsortierung (auch bei Tree-Struktur)
+### Drag & Drop für Zeilenumsortierung (In Progress)
+- 🔄️ Erstellen des RowReorderEvent refactorn und testen
+- 🔄️ Drop Placement durch before/after Elemente darstellen (mit Einrückung)
+- 🔄️ Styling refactorn
+- 🔄️ Verwendung dokumentieren + Beispielimplementierung
+- 🔄️ Umgang mit Drop eines Elements von außen (z.B. andere Tabelle)
 
 ### Geplante Features
 - 📋 Sortierung nach mehreren Spalten
