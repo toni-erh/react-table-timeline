@@ -29,15 +29,17 @@ description: When working on features
 - ✅ Styling der Tabelle an sich
 - ✅ Überschreiben der Basiskomponenten (z.B. Custom Sceleton Row)
 
-### Tree Functionality (In Entwicklung)
-- 🔄 Expand/Collapse Funktionalität
-- 🔄 Parent-Child Relationship Handling
-- 🔄 Nested Row Rendering
-- 🔄 Zusammenspiel mit Lazy Loading und Virtualization 
+### Tree Functionality
+- ✅ Expand/Collapse Funktionalität
+- ✅ Parent-Child Relationship Handling
+- ✅ Nested Row Rendering
+- ✅ Zusammenspiel mit Lazy Loading und Virtualization
+
+### In Progress
+- 🔄️ Drag & Drop für Zeilenumsortierung (auch bei Tree-Struktur)
 
 ### Geplante Features
 - 📋 Sortierung nach mehreren Spalten
-- 📋 Drag & Drop für Zeilenumsortierung (auch bei Tree-Struktur)
 - 📋 Spalteninteraktionen (z.B. Spaltenbreite, Spaltenreihenfolge, Spaltenausblenden, Spaltenfixieren)
 - 📋 Spaltenvirtualization
 - 📋 Single-/Multi-Selection für Zeilen und Zellen

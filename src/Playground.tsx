@@ -78,6 +78,8 @@ export default function Playground() {
           defaultExpansionDepth={1}
           rowVirtualizationMargin={0}
           renderSkeletonRow={CustomSkeletonRow}
+          onRowReorder={(event) => console.log(event)}
+          onCanDrop={(event) => event.newParentId === event.sourceParentId}
         />
       </div>
     </div>

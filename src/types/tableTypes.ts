@@ -24,6 +24,42 @@ export type RequestedRows = {
   rowExpansions: RowExpansions;
 }
 
+// Drag & Drop types
+export type RowReorderPlacement = 'before' | 'after' | 'inside';
+
+export interface RowReorderEvent {
+  // source
+  sourceId: string;
+  sourceParentId?: string;
+  sourceIndex: number;
+  sourcePath: string[];
+
+  // target
+  targetId: string;
+  targetParentId?: string;
+  targetIndex: number;
+  targetPath: string[];
+
+  // drop intent
+  placement: RowReorderPlacement;
+
+  // derived
+  newParentId?: string;
+  newParentPath: string[];
+  siblingIndex?: number; // when placement === 'inside'
+
+  // neighborhood for deterministic placement, independent from indexes
+  prevSiblingId?: string;
+  nextSiblingId?: string;
+
+  // hints
+  isSameParentMove: boolean;
+  isDescendantDrop: boolean;
+
+  // meta
+  timestamp: number;
+}
+
 export type RenderExpanderParams<TableRow extends TableRowBase> = {
   expanded: boolean;
   hasChildren: boolean;
@@ -37,6 +73,8 @@ export interface TableProps<TableRow extends TableRowBase> extends React.HTMLAtt
   rows: Array<TableRow>;
   rowCount: number;
   onRowRangeChange?: (requestedRows: RequestedRows) => void;
+  onRowReorder?: (event: RowReorderEvent) => void;
+  onCanDrop?: (event: RowReorderEvent) => boolean;
   lineHeight?: number;
   rowVirtualizationMargin?: number;
   defaultExpansionDepth?: number;

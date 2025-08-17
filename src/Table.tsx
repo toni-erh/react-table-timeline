@@ -13,6 +13,8 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   rows,
   rowCount,
   onRowRangeChange,
+  onRowReorder,
+  onCanDrop,
   lineHeight = 20,
   rowVirtualizationMargin = 5,
   defaultExpansionDepth,
@@ -53,7 +55,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   return (
     <RowExpansionProvider rowExpansions={rowExpansions} setRowExpansions={setRowExpansions}>
       <div className={`table-container ${className || ''}`} style={containerStyle}>
-        <TableHeader columns={columns} leftWidth={leftWidth} />
+        <TableHeader columns={columns} leftWidth={leftWidth} showDragColumn={!!onRowReorder} />
         <div ref={scrollContainerRef} style={{ overflowY: 'auto', height: `calc(100% - ${lineHeight}px)`, display: 'flex' }}>
           <div style={{
             height: `${(expandedRowCount - firstRenderedIndex) * lineHeight}px`,
@@ -63,7 +65,16 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
             maxWidth: 800,
             backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent calc(var(--table-line-height) - var(--table-border-width)), var(--table-border-color) var(--table-border-width), var(--table-border-color) var(--table-line-height))`
           }}>
-            <TableBody preparedRows={preparedRows} columns={columns} lineHeight={lineHeight} renderSkeletonRow={renderSkeletonRow} renderExpander={renderExpander} />
+            <TableBody
+              preparedRows={preparedRows}
+              columns={columns}
+              lineHeight={lineHeight}
+              renderSkeletonRow={renderSkeletonRow}
+              renderExpander={renderExpander}
+              showDragHandle={!!onRowReorder}
+              onRowReorder={onRowReorder}
+              onCanDrop={onCanDrop}
+            />
           </div>
           <div
             style={{
