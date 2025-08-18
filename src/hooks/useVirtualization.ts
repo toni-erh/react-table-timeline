@@ -27,6 +27,7 @@ export function useVirtualization<TableRow extends TableRowBase>(
   flatRowCount: number,
   lineHeight: number,
   rowVirtualizationMargin: number,
+  rowVirtualizationStep: number,
   expandedChildCounts: ExpandedChildCounts,
   rowExpansions: RowExpansions,
   onRowRangeChange?: (requestedRows: RequestedRows) => void
@@ -54,8 +55,9 @@ export function useVirtualization<TableRow extends TableRowBase>(
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          setContainerScrollTop(Math.floor(container.scrollTop / lineHeight) * lineHeight);
-          setContainerClientHeight(container.clientHeight);
+          const scrollStep = lineHeight * rowVirtualizationStep;
+          setContainerScrollTop(Math.floor(container.scrollTop / scrollStep) * scrollStep);
+          setContainerClientHeight(Math.ceil(container.clientHeight / scrollStep) * scrollStep);
           ticking = false;
         });
         ticking = true;

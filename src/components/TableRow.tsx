@@ -2,7 +2,6 @@ import React from 'react';
 import type { TableRowBase, RenderExpanderParams, RowReorderEvent, RowReorderPlacement } from '../types/tableTypes';
 import { TableCell } from './TableCell';
 import { useRowExpansion } from '../context/RowExpansionContext';
-import { getPath } from '../utils/treeUtils';
 
 interface TableRowProps<T extends TableRowBase> {
   row: T;
@@ -10,39 +9,16 @@ interface TableRowProps<T extends TableRowBase> {
   renderExpander?: (params: RenderExpanderParams<T>) => React.ReactNode;
   showDragHandle?: boolean;
   onRowReorder?: (event: RowReorderEvent) => void;
-  onCanDrop?: (event: RowReorderEvent) => boolean;
 }
 
-// DnD session state (scoped to module)
-let currentDragSourceId: string | null = null;
-
-export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander, showDragHandle, onRowReorder, onCanDrop }: TableRowProps<T>) => {
+export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander, showDragHandle, onRowReorder }: TableRowProps<T>) => {
   const { isExpanded, toggle, getLevel, rowExpansions } = useRowExpansion();
   const hasChildren = !!row.children?.length;
   const level = getLevel(row.id);
 
   const [dragOverPlacement, setDragOverPlacement] = React.useState<RowReorderPlacement | null>(null);
-  const [dragOverAllowed, setDragOverAllowed] = React.useState<boolean | null>(null);
 
   // helpers
-  const getIndexWithinParent = React.useCallback((id: string): number => {
-    const parentId = rowExpansions.get(id)?.parentId;
-    if (!parentId) return -1; // root sentinel
-    const siblings = rowExpansions.get(parentId)?.childrenIds || [];
-    return siblings.indexOf(id);
-  }, [rowExpansions]);
-
-  const getSiblingNeighbors = React.useCallback((id: string): { prevSiblingId?: string; nextSiblingId?: string } => {
-    const parentId = rowExpansions.get(id)?.parentId;
-    if (!parentId) return {};
-    const siblings = rowExpansions.get(parentId)?.childrenIds || [];
-    const idx = siblings.indexOf(id);
-    return {
-      prevSiblingId: idx > 0 ? siblings[idx - 1] : undefined,
-      nextSiblingId: idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : undefined,
-    };
-  }, [rowExpansions]);
-
   const computePlacement = (e: React.DragEvent<HTMLDivElement>): RowReorderPlacement => {
     const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
     const offsetY = e.clientY - rect.top;
@@ -52,115 +28,84 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
     return 'inside';
   };
 
+  const computePath = (id: string): string[] => {
+    const path: string[] = [];
+    let currentId = id;
+    while (rowExpansions.has(currentId)) {
+      const expansion = rowExpansions.get(currentId);
+      if (!expansion) break;
+      path.unshift(currentId);
+      currentId = expansion.parentId || '';
+    }
+    return path;
+  };
+
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     if (!onRowReorder) return;
     e.preventDefault();
-    const dtId = e.dataTransfer.getData('text/plain');
-    const sourceId = dtId || currentDragSourceId || '';
+    const sourceId = e.dataTransfer.getData('text/plain');
     if (!sourceId || sourceId === row.id || !rowExpansions.get(sourceId)) return;
     const placement = computePlacement(e);
 
     const targetId = row.id;
-    const sourceParentId = rowExpansions.get(sourceId)?.parentId;
-    const targetParentId = rowExpansions.get(targetId)?.parentId;
+    const source = rowExpansions.get(sourceId);
+    const target = rowExpansions.get(targetId);
+    const sourceParentId = source?.parentId;
+    const targetParentId = target?.parentId;
 
-    const sourcePath = getPath(rowExpansions, sourceId);
-    const targetPath = getPath(rowExpansions, targetId);
+    const prevSiblingId = (() => {
+      switch (placement) {
+        case 'before':
+          return target?.prevSiblingId;
+        case 'after':
+          return targetId;
+        case 'inside':
+          return undefined;
+      }
+    })();
+
+    const nextSiblingId = (() => {
+      switch (placement) {
+        case 'before':
+          return targetId;
+        case 'after':
+          return target?.nextSiblingId;
+        case 'inside':
+          return target?.childrenIds[0];
+      }
+    })();
 
     const event: RowReorderEvent = {
       sourceId,
       sourceParentId,
-      sourceIndex: getIndexWithinParent(sourceId),
-      sourcePath,
+      sourcePath: computePath(sourceId),
       targetId,
       targetParentId,
-      targetIndex: getIndexWithinParent(targetId),
-      targetPath,
+      targetPath: computePath(targetId),
       placement,
       newParentId: placement === 'inside' ? targetId : targetParentId,
-      newParentPath:
-        placement === 'inside'
-          ? [...targetPath]
-          : (targetParentId
-            ? getPath(rowExpansions, targetParentId)
-            : targetPath.slice(0, Math.max(0, targetPath.length - 1))),
-      siblingIndex: placement === 'inside' ? 0 : undefined,
-      ...getSiblingNeighbors(targetId),
+      prevSiblingId,
+      nextSiblingId,
       isSameParentMove: (sourceParentId ?? null) === (placement === 'inside' ? targetId : targetParentId ?? null),
-      isDescendantDrop: targetPath.includes(sourceId),
-      timestamp: Date.now(),
     };
-
-    // guard
-    if (onCanDrop && !onCanDrop(event)) {
-      setDragOverPlacement(null);
-      setDragOverAllowed(null);
-      return;
-    }
 
     onRowReorder(event);
-    currentDragSourceId = null;
     setDragOverPlacement(null);
-    setDragOverAllowed(null);
   };
 
-  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    if (!onRowReorder) return;
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const sourceId = currentDragSourceId;
-    if (!sourceId || sourceId === row.id || !rowExpansions.get(sourceId)) {
-      setDragOverPlacement(null);
-      setDragOverAllowed(null);
-      return;
-    }
     const placement = computePlacement(e);
-
-    const targetId = row.id;
-    const sourceParentId = rowExpansions.get(sourceId)?.parentId;
-    const targetParentId = rowExpansions.get(targetId)?.parentId;
-    const sourcePath = getPath(rowExpansions, sourceId);
-    const targetPath = getPath(rowExpansions, targetId);
-
-    const preview: RowReorderEvent = {
-      sourceId,
-      sourceParentId,
-      sourceIndex: getIndexWithinParent(sourceId),
-      sourcePath,
-      targetId,
-      targetParentId,
-      targetIndex: getIndexWithinParent(targetId),
-      targetPath,
-      placement,
-      newParentId: placement === 'inside' ? targetId : targetParentId,
-      newParentPath:
-        placement === 'inside'
-          ? [...targetPath]
-          : (targetParentId
-            ? getPath(rowExpansions, targetParentId)
-            : targetPath.slice(0, Math.max(0, targetPath.length - 1))),
-      siblingIndex: placement === 'inside' ? 0 : undefined,
-      ...getSiblingNeighbors(targetId),
-      isSameParentMove: (sourceParentId ?? null) === (placement === 'inside' ? targetId : targetParentId ?? null),
-      isDescendantDrop: targetPath.includes(sourceId),
-      timestamp: Date.now(),
-    };
-
-    const allowed = onCanDrop ? onCanDrop(preview) : true;
     setDragOverPlacement(placement);
-    setDragOverAllowed(allowed);
   };
 
-  const onDragLeave = () => {
+  const handleDragLeave = () => {
     setDragOverPlacement(null);
-    setDragOverAllowed(null);
   };
 
   // visual indicators
   const indicatorStyle: React.CSSProperties = React.useMemo(() => {
     if (!dragOverPlacement) return {};
-    if (dragOverAllowed === false) {
-      return { backgroundColor: 'var(--table-drop-inside-bg, rgba(255, 30, 30, 0.1))' };
-    }
     if (dragOverPlacement === 'before') {
       return { boxShadow: 'inset 0 2px 0 0 var(--table-accent-color, dodgerblue)' };
     }
@@ -169,10 +114,10 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
     }
     // inside
     return { backgroundColor: 'var(--table-drop-inside-bg, rgba(30,144,255,0.1))' };
-  }, [dragOverPlacement, dragOverAllowed]);
+  }, [dragOverPlacement]);
 
   return (
-    <div className="table-row" onDrop={handleDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} style={indicatorStyle}>
+    <div className="table-row" onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave} style={indicatorStyle}>
       {showDragHandle && (
         <div
           className="table-row-drag-handle"
@@ -181,11 +126,10 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
           title="Drag to reorder"
           draggable
           onDragStart={(e) => {
-            currentDragSourceId = row.id;
             e.dataTransfer.setData('text/plain', row.id);
             e.dataTransfer.effectAllowed = 'move';
           }}
-          onDragEnd={() => { currentDragSourceId = null; }}
+          onDragEnd={() => { }}
         >
           ⋮⋮
         </div>

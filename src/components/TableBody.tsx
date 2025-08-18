@@ -12,7 +12,6 @@ interface TableBodyProps<T extends TableRowBase> {
   renderExpander?: (params: RenderExpanderParams<T>) => React.ReactNode;
   showDragHandle?: boolean;
   onRowReorder?: (event: RowReorderEvent) => void;
-  onCanDrop?: (event: RowReorderEvent) => boolean;
 }
 
 export const TableBody = <T extends TableRowBase>({ 
@@ -23,7 +22,6 @@ export const TableBody = <T extends TableRowBase>({
   renderExpander, 
   showDragHandle, 
   onRowReorder, 
-  onCanDrop 
 }: TableBodyProps<T>) => {
   return (
     <>
@@ -36,7 +34,6 @@ export const TableBody = <T extends TableRowBase>({
             renderExpander={renderExpander} 
             showDragHandle={!!showDragHandle} 
             onRowReorder={onRowReorder} 
-            onCanDrop={onCanDrop} 
           />
         ) : (
           renderSkeletonRow ? (

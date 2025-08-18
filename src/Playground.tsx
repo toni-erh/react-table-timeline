@@ -23,7 +23,7 @@ const CustomSkeletonRow = () => (
     />
   </div>
 );
-import type { TableRowBase } from './types/tableTypes';
+import type { RowReorderEvent, TableRowBase } from './types/tableTypes';
 
 // Mock Data
 const columns = ['index', 'id', 'name', 'age', 'city'];
@@ -58,7 +58,31 @@ const rows = generateData(100, 1);
 export default function Playground() {
   const [isDark, setIsDark] = useState(false);
 
-  const [loadedRows, setLoadedRows] = useState<typeof rows>([]) // rows.slice(0, 10));
+  const [loadedRows, setLoadedRows] = useState<typeof rows>(rows.slice(0, 10));
+
+  const handleRowReorder = ({ sourceId, sourcePath, targetId, targetPath, placement }: RowReorderEvent) => {
+    const newRows = structuredClone(loadedRows);
+    const sourceParent = sourcePath.slice(0, sourcePath.length - 1).reduce((acc, id) => acc?.[acc?.findIndex(row => row.id === id)]?.children, newRows as TableRowBase[] | undefined);
+    if (!sourceParent) return;
+    const sourceIndex = sourceParent.findIndex(row => row.id === sourceId);
+    const source = sourceParent.splice(sourceIndex, 1)[0];
+
+    const targetParentChildren = targetPath.slice(0, targetPath.length - 1).reduce((acc, id) => acc?.[acc?.findIndex(row => row.id === id)]?.children, newRows as TableRowBase[] | undefined);
+    const targetIndex = targetParentChildren?.findIndex(row => row.id === targetId);
+    if (!targetParentChildren || targetIndex === undefined) return;
+    if (placement === 'inside') {
+      if (targetParentChildren[targetIndex].children) {
+        targetParentChildren[targetIndex].children.unshift(source);
+      } else {
+        targetParentChildren[targetIndex].children = [source];
+      }
+    } else if (placement === 'before') {
+      targetParentChildren.splice(targetIndex, 0, source);
+    } else if (placement === 'after') {
+      targetParentChildren.splice(targetIndex + 1, 0, source);
+    }
+    setLoadedRows(newRows);
+  };
 
   const themeClass = isDark ? 'dark-theme' : '';
 
@@ -73,16 +97,14 @@ export default function Playground() {
       <div className="table-wrapper">
         <Table<Person>
           rows={loadedRows}
-          rowCount={rows.length}
+          rowCount={loadedRows.length}
           columns={columns}
-          // onRowRangeChange={(requestedRows) => console.log(`Rows ${requestedRows.firstFirstLevelIndex} to ${requestedRows.lastFirstLevelIndex} are visible`, requestedRows.rowExpansions)}
-          onRowRangeChange={({ firstFirstLevelIndex, lastFirstLevelIndex }) => setLoadedRows(rows.slice(firstFirstLevelIndex, lastFirstLevelIndex))}
+          // onRowRangeChange={({ firstFirstLevelIndex, lastFirstLevelIndex }) => setLoadedRows(rows.slice(firstFirstLevelIndex, lastFirstLevelIndex))}
           lineHeight={30}
           defaultExpansionDepth={1}
           rowVirtualizationMargin={0}
           renderSkeletonRow={CustomSkeletonRow}
-          onRowReorder={(event) => console.log(event)}
-          onCanDrop={(event) => event.newParentId === event.sourceParentId}
+          onRowReorder={handleRowReorder}
         />
       </div>
     </div>

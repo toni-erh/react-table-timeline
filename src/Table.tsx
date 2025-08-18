@@ -14,9 +14,9 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   rowCount,
   onRowRangeChange,
   onRowReorder,
-  onCanDrop,
   lineHeight = 20,
   rowVirtualizationMargin = 5,
+  rowVirtualizationStep = 5,
   defaultExpansionDepth,
   className,
   style,
@@ -39,6 +39,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
     expandedRowCount,
     lineHeight,
     rowVirtualizationMargin,
+    rowVirtualizationStep,
     expandedChildCounts,
     rowExpansions,
     onRowRangeChange
@@ -73,7 +74,6 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
               renderExpander={renderExpander}
               showDragHandle={!!onRowReorder}
               onRowReorder={onRowReorder}
-              onCanDrop={onCanDrop}
             />
           </div>
           <div

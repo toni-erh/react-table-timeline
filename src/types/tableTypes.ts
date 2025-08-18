@@ -10,7 +10,14 @@ export type TableSceletonRow = {
 
 export type PreparedRow<TableRow extends TableRowBase> = TableRow | TableSceletonRow;
 
-export type RowExpansions = Map<string, { isExpanded: boolean, childrenIds: string[], parentId: string | undefined }>
+export type RowExpansionData = { 
+  isExpanded: boolean, 
+  childrenIds: string[], 
+  parentId: string | undefined, 
+  prevSiblingId: string | undefined, 
+  nextSiblingId: string | undefined 
+}
+export type RowExpansions = Map<string, RowExpansionData>
 
 export type ExpandedChildCounts = { 
   index: number; 
@@ -31,13 +38,11 @@ export interface RowReorderEvent {
   // source
   sourceId: string;
   sourceParentId?: string;
-  sourceIndex: number;
   sourcePath: string[];
 
   // target
   targetId: string;
   targetParentId?: string;
-  targetIndex: number;
   targetPath: string[];
 
   // drop intent
@@ -45,8 +50,6 @@ export interface RowReorderEvent {
 
   // derived
   newParentId?: string;
-  newParentPath: string[];
-  siblingIndex?: number; // when placement === 'inside'
 
   // neighborhood for deterministic placement, independent from indexes
   prevSiblingId?: string;
@@ -54,10 +57,6 @@ export interface RowReorderEvent {
 
   // hints
   isSameParentMove: boolean;
-  isDescendantDrop: boolean;
-
-  // meta
-  timestamp: number;
 }
 
 export type RenderExpanderParams<TableRow extends TableRowBase> = {
@@ -74,9 +73,9 @@ export interface TableProps<TableRow extends TableRowBase> extends React.HTMLAtt
   rowCount: number;
   onRowRangeChange?: (requestedRows: RequestedRows) => void;
   onRowReorder?: (event: RowReorderEvent) => void;
-  onCanDrop?: (event: RowReorderEvent) => boolean;
   lineHeight?: number;
   rowVirtualizationMargin?: number;
+  rowVirtualizationStep?: number;
   defaultExpansionDepth?: number;
   renderSkeletonRow?: () => React.ReactNode;
   renderExpander?: (params: RenderExpanderParams<TableRow>) => React.ReactNode;

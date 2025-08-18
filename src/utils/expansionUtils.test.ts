@@ -25,8 +25,8 @@ describe('expansionUtils', () => {
   describe('calculateExpandedChildCounts', () => {
     it('should calculate child counts for expanded rows', () => {
       const expansions: RowExpansions = new Map();
-      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
-      expansions.set('2', { isExpanded: true, childrenIds: ['2-0'], parentId: undefined });
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined, prevSiblingId: undefined, nextSiblingId: '1' });
+      expansions.set('2', { isExpanded: true, childrenIds: ['2-0'], parentId: undefined, prevSiblingId: '1', nextSiblingId: undefined });
       const result = calculateExpandedChildCounts(mockRows, expansions);
       
       expect(result).toEqual([
@@ -37,8 +37,8 @@ describe('expansionUtils', () => {
 
     it('should include nested children when deeply expanded', () => {
       const expansions: RowExpansions = new Map();
-      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
-      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined, prevSiblingId: undefined, nextSiblingId: '1' });
+      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0', prevSiblingId: undefined, nextSiblingId: '0-1' });
       const result = calculateExpandedChildCounts(mockRows, expansions);
       
       expect(result).toEqual([
@@ -62,8 +62,8 @@ describe('expansionUtils', () => {
         { index: 1, id: '1' }
       ];
       const expansions: RowExpansions = new Map();
-      expansions.set('0', { isExpanded: true, childrenIds: [], parentId: undefined });
-      expansions.set('0-0', { isExpanded: true, childrenIds: [], parentId: '0' });
+      expansions.set('0', { isExpanded: true, childrenIds: [], parentId: undefined, prevSiblingId: undefined, nextSiblingId: '1' });
+      expansions.set('0-0', { isExpanded: true, childrenIds: [], parentId: '0', prevSiblingId: undefined, nextSiblingId: '0-1' });
       
       const result = calculateExpandedChildCounts(rowsWithoutChildren, expansions);
       expect(result).toEqual([]);
@@ -75,8 +75,8 @@ describe('expansionUtils', () => {
         { index: 1, id: '1', children: [{ index: 2, id: '1-0' }] }
       ];
       const expansions: RowExpansions = new Map();
-      expansions.set('1', { isExpanded: true, childrenIds: ['1-0'], parentId: undefined });
-      expansions.set('1-0', { isExpanded: true, childrenIds: [], parentId: '1' });
+      expansions.set('1', { isExpanded: true, childrenIds: ['1-0'], parentId: undefined, prevSiblingId: '0', nextSiblingId: undefined });
+      expansions.set('1-0', { isExpanded: true, childrenIds: [], parentId: '1', prevSiblingId: undefined, nextSiblingId: undefined });
       
       const result = calculateExpandedChildCounts(rowsWithEmptyChildren, expansions);
       expect(result).toEqual([
@@ -92,8 +92,8 @@ describe('expansionUtils', () => {
         { index: 6, rowCount: 1 }
       ];
       const expansions: RowExpansions = new Map();
-      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
-      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined, prevSiblingId: undefined, nextSiblingId: '1' });
+      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0', prevSiblingId: undefined, nextSiblingId: '0-1' });
       
       const result = updateExpandedChildCounts(prevCounts, mockRows, expansions);
       
@@ -108,8 +108,8 @@ describe('expansionUtils', () => {
         { index: 0, rowCount: 4 }
       ];
       const expansions: RowExpansions = new Map();
-      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
-      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined, prevSiblingId: undefined, nextSiblingId: '1' });
+      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0', prevSiblingId: undefined, nextSiblingId: '0-1' });
       
       const result = updateExpandedChildCounts(prevCounts, mockRows, expansions);
       
@@ -121,9 +121,9 @@ describe('expansionUtils', () => {
         { index: 0, rowCount: 4 }
       ];
       const expansions: RowExpansions = new Map();
-      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
-      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
-      expansions.set('2', { isExpanded: true, childrenIds: ['2-0'], parentId: undefined });
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined, prevSiblingId: undefined, nextSiblingId: '1' });
+      expansions.set('0-0', { isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0', prevSiblingId: undefined, nextSiblingId: '0-1' });
+      expansions.set('2', { isExpanded: true, childrenIds: ['2-0'], parentId: undefined, prevSiblingId: '1', nextSiblingId: undefined });
       
       const result = updateExpandedChildCounts(prevCounts, mockRows, expansions);
       
@@ -139,8 +139,8 @@ describe('expansionUtils', () => {
         { index: 2, rowCount: 1 }
       ];
       const expansions: RowExpansions = new Map();
-      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
-      expansions.set('2', { isExpanded: false, childrenIds: ['2-0'], parentId: undefined });
+      expansions.set('0', { isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined, prevSiblingId: undefined, nextSiblingId: '1' });
+      expansions.set('2', { isExpanded: false, childrenIds: ['2-0'], parentId: undefined, prevSiblingId: '1', nextSiblingId: undefined });
       
       const result = updateExpandedChildCounts(prevCounts, mockRows, expansions);
       

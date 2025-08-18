@@ -28,11 +28,11 @@ describe('treeUtils', () => {
       const result = generateInitialExpansions(mockRows, undefined);
       expect(result.size).toBe(9); // All nodes should be included
       
-      expect(result.get('0')).toEqual({ isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined });
-      expect(result.get('0-0')).toEqual({ isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0' });
-      expect(result.get('0-0-1')).toEqual({ isExpanded: true, childrenIds: ['0-0-1-0'], parentId: '0-0' });
-      expect(result.get('1')).toEqual({ isExpanded: true, childrenIds: [], parentId: undefined });
-      expect(result.get('2')).toEqual({ isExpanded: true, childrenIds: ['2-0'], parentId: undefined });
+      expect(result.get('0')).toEqual({ isExpanded: true, childrenIds: ['0-0', '0-1'], parentId: undefined, prevSiblingId: undefined, nextSiblingId: '1' });
+      expect(result.get('0-0')).toEqual({ isExpanded: true, childrenIds: ['0-0-0', '0-0-1'], parentId: '0', prevSiblingId: undefined, nextSiblingId: '0-1' });
+      expect(result.get('0-0-1')).toEqual({ isExpanded: true, childrenIds: ['0-0-1-0'], parentId: '0-0', prevSiblingId: '0-0-0', nextSiblingId: undefined });
+      expect(result.get('1')).toEqual({ isExpanded: true, childrenIds: [], parentId: undefined, prevSiblingId: '0', nextSiblingId: '2' });
+      expect(result.get('2')).toEqual({ isExpanded: true, childrenIds: ['2-0'], parentId: undefined, prevSiblingId: '1', nextSiblingId: undefined });
     });
 
     it('should expand to depth 1', () => {

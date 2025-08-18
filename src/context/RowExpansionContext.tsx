@@ -1,5 +1,5 @@
 import React from 'react';
-import type { RowExpansions } from '../types/tableTypes';
+import type { RowExpansionData, RowExpansions } from '../types/tableTypes';
 import { toggleExpansion as toggleExpansionUtil } from '../utils/treeUtils';
 
 export interface RowExpansionContextValue {
@@ -13,7 +13,7 @@ export interface RowExpansionContextValue {
 }
 
 const defaultValue: RowExpansionContextValue = {
-  rowExpansions: new Map<string, { isExpanded: boolean; childrenIds: string[]; parentId: string | undefined }>(),
+  rowExpansions: new Map<string, RowExpansionData>(),
   setRowExpansions: () => { },
   isExpanded: () => false,
   toggle: () => { },

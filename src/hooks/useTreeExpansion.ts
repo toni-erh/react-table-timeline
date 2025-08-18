@@ -34,7 +34,6 @@ export function useTreeExpansion<TableRow extends TableRowBase>(
   }, [rows]);
 
   React.useEffect(() => {
-    console.log(rowExpansions)
     setExpandedChildCounts((prev) => updateExpandedChildCounts(prev, rows, rowExpansions));
   }, [rowExpansions]);
 

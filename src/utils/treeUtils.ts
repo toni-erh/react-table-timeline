@@ -1,4 +1,4 @@
-import type { TableRowBase, RowExpansions } from '../types/tableTypes';
+import type { TableRowBase, RowExpansions, RowExpansionData } from '../types/tableTypes';
 import { areArraysEqual } from './arrayUtils';
 
 /**
@@ -9,9 +9,9 @@ export function generateInitialExpansions(
   defaultExpansionDepth: number | undefined,
   parentId: string | undefined = undefined
 ): RowExpansions {
-  const expansions = new Map<string, { isExpanded: boolean, childrenIds: string[], parentId: string | undefined }>();
+  const expansions = new Map<string, RowExpansionData>();
 
-  rows.forEach((row) => {
+  rows.forEach((row, i) => {
     const childrenIds = row.children?.map(child => child.id) || [];
     const isExpanded = defaultExpansionDepth === undefined || defaultExpansionDepth > 0;
 
@@ -19,7 +19,9 @@ export function generateInitialExpansions(
     expansions.set(row.id, {
       isExpanded,
       childrenIds,
-      parentId
+      parentId,
+      prevSiblingId: i > 0 ? rows[i - 1].id : undefined,
+      nextSiblingId: i < rows.length - 1 ? rows[i + 1].id : undefined
     });
 
     // Recursively add children's expansion states if expanded
@@ -50,7 +52,7 @@ export function updateExpansions(expansions: RowExpansions, rows: TableRowBase[]
   const newExpansions = new Map(expansions);
   let changed = false;
 
-  const updateOrAdd = (row: TableRowBase, parentId: string | undefined) => {
+  const updateOrAdd = (row: TableRowBase, parentId: string | undefined, prevSiblingId: string | undefined, nextSiblingId: string | undefined) => {
     const expansion = newExpansions.get(row.id);
     const childrenIds = row.children?.map(child => child.id) || []
     if (expansion) {
@@ -66,15 +68,17 @@ export function updateExpansions(expansions: RowExpansions, rows: TableRowBase[]
       newExpansions.set(row.id, {
         isExpanded: false,
         childrenIds,
-        parentId
+        parentId,
+        prevSiblingId,
+        nextSiblingId
       });
       changed = true;
     }
-    row.children?.forEach((child) => updateOrAdd(child, row.id))
+    row.children?.forEach((child, i) => updateOrAdd(child, row.id, row.children?.[i - 1]?.id, row.children?.[i + 1]?.id))
   };
 
-  rows.forEach((row) => {
-    updateOrAdd(row, undefined)
+  rows.forEach((row, i) => {
+    updateOrAdd(row, undefined, rows[i - 1]?.id, rows[i + 1]?.id)
   });
 
   return changed ? newExpansions : expansions;
