@@ -2,6 +2,7 @@
   --table-bg: #fff;
   --table-border-color: #ddd;
   --table-border-width: 1px;
+  --table-accent-color: #1890ff;
   --table-text-color: #333;
   --table-header-bg: #f8f8f8;
   --table-row-hover-bg: #f1f1f1;
@@ -41,10 +42,59 @@
   border-bottom: var(--table-border-width) solid var(--table-border-color);
   height: var(--table-line-height);
   box-sizing: border-box;
+  position: relative;
 }
 
 .table-row:hover {
   background-color: var(--table-row-hover-bg);
+}
+
+.table-row::before,
+.table-row::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--table-accent-color);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+.table-row::before {
+  top: -1px;
+}
+.table-row::after {
+  bottom: -2px;
+}
+
+.table-row[data-drop-placement="before"]::before {
+  top: -1px;
+  opacity: 1;
+}
+.table-row[data-drop-placement="after"]::after {
+  bottom: -2px;
+  opacity: 1;
+}
+.table-row[data-drop-placement="inside"]::after {
+  bottom: -2px;
+  left: 24px;
+  opacity: 1;
+}
+
+.table-row-drag-handle {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: element;
+  width: 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-row-drag-handle:active {
+  cursor: grabbing;
 }
 
 .table-row-expander {

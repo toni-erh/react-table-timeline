@@ -20,6 +20,7 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
   const [dragOverPlacement, setDragOverPlacement] = React.useState<RowReorderPlacement | null>(null);
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    setDragOverPlacement(null);
     if (!onRowReorder) return;
     e.preventDefault();
 
@@ -31,7 +32,6 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
 
     const event = prepareRowReorderEvent(sourceId, targetId, placement, rowExpansions);
     onRowReorder(event);
-    setDragOverPlacement(null);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -44,25 +44,28 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
     setDragOverPlacement(null);
   };
 
-  // visual indicators
-  const indicatorStyle: React.CSSProperties = React.useMemo(() => {
-    if (!dragOverPlacement) return {};
-    if (dragOverPlacement === 'before') {
-      return { boxShadow: 'inset 0 2px 0 0 var(--table-accent-color, dodgerblue)' };
+  const indicatorDataAttrs = React.useMemo(() => {
+    if (!dragOverPlacement) {
+      return {
+        'data-drop-placement': undefined,
+      };
     }
-    if (dragOverPlacement === 'after') {
-      return { boxShadow: 'inset 0 -2px 0 0 var(--table-accent-color, dodgerblue)' };
-    }
-    // inside
-    return { backgroundColor: 'var(--table-drop-inside-bg, rgba(30,144,255,0.1))' };
+    return {
+      'data-drop-placement': dragOverPlacement,
+    };
   }, [dragOverPlacement]);
 
   return (
-    <div className="table-row" onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave} style={indicatorStyle}>
+    <div 
+      className="table-row" 
+      onDrop={handleDrop} 
+      onDragOver={handleDragOver} 
+      onDragLeave={handleDragLeave} 
+      {...indicatorDataAttrs}
+    >
       {showDragHandle && (
         <div
           className="table-row-drag-handle"
-          style={{ width: 20, height: '100%', cursor: 'grab', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           aria-hidden
           title="Drag to reorder"
           draggable
@@ -70,7 +73,6 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
             e.dataTransfer.setData('text/plain', row.id);
             e.dataTransfer.effectAllowed = 'move';
           }}
-          onDragEnd={() => { }}
         >
           ⋮⋮
         </div>
