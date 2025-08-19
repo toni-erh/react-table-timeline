@@ -58,7 +58,7 @@ const rows = generateData(100, 1);
 export default function Playground() {
   const [isDark, setIsDark] = useState(false);
 
-  const [loadedRows, setLoadedRows] = useState<typeof rows>(rows.slice(0, 10));
+  const [loadedRows, setLoadedRows] = useState<typeof rows>(rows);
 
   const handleRowReorder = ({ sourceId, sourcePath, targetId, targetPath, placement }: RowReorderEvent) => {
     const newRows = structuredClone(loadedRows);

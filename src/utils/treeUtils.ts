@@ -137,7 +137,7 @@ export function toggleExpansion(expansions: RowExpansions, rowId: string): RowEx
 }
 
 
-export function getPath(expansions: RowExpansions, rowId: string): string[] {
+export function computePath(expansions: RowExpansions, rowId: string): string[] {
   const path: string[] = [];
   let current: string | undefined = rowId;
   while (current) {

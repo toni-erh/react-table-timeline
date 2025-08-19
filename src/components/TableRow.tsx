@@ -2,6 +2,7 @@ import React from 'react';
 import type { TableRowBase, RenderExpanderParams, RowReorderEvent, RowReorderPlacement } from '../types/tableTypes';
 import { TableCell } from './TableCell';
 import { useRowExpansion } from '../context/RowExpansionContext';
+import { computePlacement, prepareRowReorderEvent } from '../utils/dragAndDropUtils';
 
 interface TableRowProps<T extends TableRowBase> {
   row: T;
@@ -18,77 +19,17 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
 
   const [dragOverPlacement, setDragOverPlacement] = React.useState<RowReorderPlacement | null>(null);
 
-  // helpers
-  const computePlacement = (e: React.DragEvent<HTMLDivElement>): RowReorderPlacement => {
-    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-    const offsetY = e.clientY - rect.top;
-    const threshold = rect.height * 0.25;
-    if (offsetY < threshold) return 'before';
-    if (offsetY > rect.height - threshold) return 'after';
-    return 'inside';
-  };
-
-  const computePath = (id: string): string[] => {
-    const path: string[] = [];
-    let currentId = id;
-    while (rowExpansions.has(currentId)) {
-      const expansion = rowExpansions.get(currentId);
-      if (!expansion) break;
-      path.unshift(currentId);
-      currentId = expansion.parentId || '';
-    }
-    return path;
-  };
-
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     if (!onRowReorder) return;
     e.preventDefault();
+
     const sourceId = e.dataTransfer.getData('text/plain');
     if (!sourceId || sourceId === row.id || !rowExpansions.get(sourceId)) return;
+
     const placement = computePlacement(e);
-
     const targetId = row.id;
-    const source = rowExpansions.get(sourceId);
-    const target = rowExpansions.get(targetId);
-    const sourceParentId = source?.parentId;
-    const targetParentId = target?.parentId;
 
-    const prevSiblingId = (() => {
-      switch (placement) {
-        case 'before':
-          return target?.prevSiblingId;
-        case 'after':
-          return targetId;
-        case 'inside':
-          return undefined;
-      }
-    })();
-
-    const nextSiblingId = (() => {
-      switch (placement) {
-        case 'before':
-          return targetId;
-        case 'after':
-          return target?.nextSiblingId;
-        case 'inside':
-          return target?.childrenIds[0];
-      }
-    })();
-
-    const event: RowReorderEvent = {
-      sourceId,
-      sourceParentId,
-      sourcePath: computePath(sourceId),
-      targetId,
-      targetParentId,
-      targetPath: computePath(targetId),
-      placement,
-      newParentId: placement === 'inside' ? targetId : targetParentId,
-      prevSiblingId,
-      nextSiblingId,
-      isSameParentMove: (sourceParentId ?? null) === (placement === 'inside' ? targetId : targetParentId ?? null),
-    };
-
+    const event = prepareRowReorderEvent(sourceId, targetId, placement, rowExpansions);
     onRowReorder(event);
     setDragOverPlacement(null);
   };
