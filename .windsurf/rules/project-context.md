@@ -36,9 +36,10 @@ description: When working on features
 - ✅ Zusammenspiel mit Lazy Loading und Virtualization
 
 ### Drag & Drop für Zeilenumsortierung (In Progress)
-- 🔄️ Erstellen des RowReorderEvent refactorn und testen
-- 🔄️ Drop Placement durch before/after Elemente darstellen (mit Einrückung)
-- 🔄️ Styling refactorn
+- ✅ Erstellen des RowReorderEvent refactorn
+- 🔄️ ...und testen
+- ✅ Drop Placement durch before/after Elemente darstellen (mit Einrückung)
+- ✅ Styling refactorn
 - 🔄️ Verwendung dokumentieren + Beispielimplementierung
 - 🔄️ Umgang mit Drop eines Elements von außen (z.B. andere Tabelle)
 
