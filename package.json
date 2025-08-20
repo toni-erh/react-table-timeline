@@ -1,11 +1,13 @@
 {
-  "name": "table-package",
+  "name": "react-table-timeline",
   "version": "0.1.0",
-  "description": "Reusable React Table Component (TypeScript)",
-  "main": "dist/Table.js",
-  "types": "dist/Table.d.ts",
+  "description": "Reusable React Table Timeline Component (TypeScript)",
+  "author": "Toni Erhard",
+  "main": "dist/src/Table.js",
+  "module": "dist/src/Table.mjs",
+  "types": "dist/src/Table.d.ts",
   "files": [
-    "dist",
+    "dist/src",
     "README.md"
   ],
   "scripts": {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Table } from './Table';
+import { Table } from '../src/Table';
 import './Playground.css';
 
 // Custom Skeleton Row Component for demonstration
@@ -23,10 +23,10 @@ const CustomSkeletonRow = () => (
     />
   </div>
 );
-import type { RowReorderEvent, TableRowBase } from './types/tableTypes';
+import type { RowReorderEvent, TableRowBase } from '../src/types/tableTypes';
 
 // Mock Data
-const columns = ['index', 'id', 'name', 'age', 'city'];
+const columns = ['id', 'name', 'age', 'city'];
 
 // This interface must be compatible with TableRowBase
 interface Person extends TableRowBase {

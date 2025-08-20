@@ -50,9 +50,9 @@ describe('rowPreparation', () => {
         expect(result).toHaveLength(5);
         expect(result[0]).toBe(mockRows[0]);
         expect(result[1]).toBe(mockRows[1]);
-        expect(result[2]).toEqual({ __sceleton_row: true });
-        expect(result[3]).toEqual({ __sceleton_row: true });
-        expect(result[4]).toEqual({ __sceleton_row: true });
+        expect(result[2]).toEqual({ __skeleton_row: true });
+        expect(result[3]).toEqual({ __skeleton_row: true });
+        expect(result[4]).toEqual({ __skeleton_row: true });
       });
 
       it('should handle offset in direct slice', () => {
@@ -92,7 +92,7 @@ describe('rowPreparation', () => {
         const result = prepareVirtualizedRows(mockRows.slice(5), 0, 0, 2, []);
         
         expect(result).toHaveLength(2);
-        expect(result.every(row => '__sceleton_row' in row)).toBe(true);
+        expect(result.every(row => '__skeleton_row' in row)).toBe(true);
       });
 
       it('should mix skeleton rows and data rows', () => {
@@ -102,8 +102,8 @@ describe('rowPreparation', () => {
         
         expect(result).toHaveLength(4);
         expect(result).toEqual([
-          { __sceleton_row: true },
-          { __sceleton_row: true },
+          { __skeleton_row: true },
+          { __skeleton_row: true },
           rows[2],
           rows[3]
         ]);
@@ -116,9 +116,9 @@ describe('rowPreparation', () => {
         expect(result).toHaveLength(5);
         expect(result[0]).toBe(mockRows[0]);
         expect(result[1]).toBe(mockRows[1]);
-        expect(result[2]).toEqual({ __sceleton_row: true });
-        expect(result[3]).toEqual({ __sceleton_row: true });
-        expect(result[4]).toEqual({ __sceleton_row: true });
+        expect(result[2]).toEqual({ __skeleton_row: true });
+        expect(result[3]).toEqual({ __skeleton_row: true });
+        expect(result[4]).toEqual({ __skeleton_row: true });
       });
     });
 
@@ -139,7 +139,7 @@ describe('rowPreparation', () => {
         const result = prepareVirtualizedRows(mockRows, 0, 10, 3, []);
         
         expect(result).toHaveLength(3);
-        expect(result.every(row => '__sceleton_row' in row)).toBe(true);
+        expect(result.every(row => '__skeleton_row' in row)).toBe(true);
       });
 
       it('should handle negative firstRealIndex gracefully', () => {

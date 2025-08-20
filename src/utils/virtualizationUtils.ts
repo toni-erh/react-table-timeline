@@ -1,12 +1,12 @@
-import type { ExpandedChildCounts, TableRowBase, TableSceletonRow } from '../types/tableTypes';
+import type { ExpandedChildCounts, TableRowBase, TableSkeletonRow } from '../types/tableTypes';
 
 /**
  * Type guard to check if a row is a data row (not a skeleton row)
  */
 export function isDataRow<TableRow extends TableRowBase>(
-  row: TableRow | TableSceletonRow
+  row: TableRow | TableSkeletonRow
 ): row is TableRow {
-  return !(row as TableSceletonRow).__sceleton_row;
+  return !(row as TableSkeletonRow).__skeleton_row;
 }
 
 /**

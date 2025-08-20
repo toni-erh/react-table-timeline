@@ -1,7 +1,7 @@
 import React from 'react';
 import type {
   TableRowBase,
-  TableSceletonRow,
+  TableSkeletonRow,
   ExpandedChildCounts,
   RowExpansions,
   RequestedRows
@@ -15,7 +15,7 @@ import { prepareVirtualizedRows } from '../utils/rowPreparation';
 export interface UseVirtualizationReturn<TableRow extends TableRowBase> {
   scrollContainerRef: React.RefObject<HTMLDivElement>;
   firstRenderedIndex: number;
-  preparedRows: Array<TableRow | TableSceletonRow>;
+  preparedRows: Array<TableRow | TableSkeletonRow>;
 }
 
 /**
@@ -111,7 +111,7 @@ export function useVirtualization<TableRow extends TableRowBase>(
   }, [firstRealIndex, lastRealIndex]);
 
   // Prepare rows to render
-  const preparedRows: (TableRow | TableSceletonRow)[] = React.useMemo(() => {
+  const preparedRows: (TableRow | TableSkeletonRow)[] = React.useMemo(() => {
     if (offsetToFirstRealIndex === undefined || rowCountToRender === undefined || firstRealIndex === undefined) {
       return [];
     }

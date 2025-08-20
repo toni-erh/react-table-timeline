@@ -5,11 +5,11 @@ export type TableRowBase = {
   children?: TableRowBase[]; 
 }
 
-export type TableSceletonRow = { 
-  __sceleton_row: true; 
+export type TableSkeletonRow = { 
+  __skeleton_row: true; 
 }
 
-export type PreparedRow<TableRow extends TableRowBase> = TableRow | TableSceletonRow;
+export type PreparedRow<TableRow extends TableRowBase> = TableRow | TableSkeletonRow;
 
 export type RowExpansionData = { 
   isExpanded: boolean, 

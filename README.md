@@ -1,4 +1,8 @@
-# React Table+Timeline Component
+# React Table + Timeline
+
+🚧 This project is still a work in progress. 🚧 
+The core concepts are more or less in place, but many features are not yet complete.  
+Feedback and ideas are very welcome!
 
 This should become a performant, highly customizable, and react-friendly table component with optional timeline support, built with TypeScript. It's designed to handle large datasets with ease, supporting virtualization and lazy loading, while not being tied to any specific data management solution.
 
