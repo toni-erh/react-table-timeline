@@ -1,6 +1,6 @@
-# High-Performance React Table Component
+# React Table+Timeline Component
 
-This is a feature-rich, performant, and highly customizable table component for React, built with TypeScript and Vite. It's designed to handle large datasets with ease, supporting virtualization, tree structures, and lazy loading out of the box.
+This should become a performant, highly customizable, and react-friendly table component with optional timeline support, built with TypeScript. It's designed to handle large datasets with ease, supporting virtualization and lazy loading, while not being tied to any specific data management solution.
 
 ## Features
 
@@ -11,22 +11,13 @@ This is a feature-rich, performant, and highly customizable table component for 
 - **Drag & Drop Reordering**: Supports reordering of rows within the table.
 - **Customizable Rendering**: Use custom render functions for maximum flexibility.
 - **Theming**: Use CSS variables for easy theming.
-- **TypeScript First**: Written entirely in TypeScript for a great developer experience with strong type safety.
-
-## Installation
-
-```bash
-npm install your-package-name
-```
+- **TypeScript**: Written entirely in TypeScript for a great developer experience with strong type safety.
 
 ## Basic Usage
 
 Here's a simple example of how to use the `Table` component:
 
 ```tsx
-import { Table } from 'your-package-name';
-import 'your-package-name/dist/style.css';
-
 const columns = ['name', 'type', 'size'];
 const data = [
   { id: '1', index: 0, name: 'Folder 1', type: 'folder', size: '100KB', children: [
