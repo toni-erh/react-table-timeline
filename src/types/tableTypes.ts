@@ -1,4 +1,5 @@
 export type TableRowBase = { 
+  // TODO: can we replace this with a firstRowIndex prop in the TableProps?
   index: number; 
   id: string; 
   children?: TableRowBase[]; 
@@ -68,15 +69,62 @@ export type RenderExpanderParams<TableRow extends TableRowBase> = {
 }
 
 export interface TableProps<TableRow extends TableRowBase> extends React.HTMLAttributes<HTMLDivElement> {
-  columns: string[];
-  rows: Array<TableRow>;
-  rowCount: number;
-  onRowRangeChange?: (requestedRows: RequestedRows) => void;
-  onRowReorder?: (event: RowReorderEvent) => void;
-  lineHeight?: number;
-  rowVirtualizationMargin?: number;
-  rowVirtualizationStep?: number;
-  defaultExpansionDepth?: number;
-  renderSkeletonRow?: () => React.ReactNode;
-  renderExpander?: (params: RenderExpanderParams<TableRow>) => React.ReactNode;
-}
+    /** 
+     * The configuration for the table columns.
+     * @example ['Column 1', 'Column 2']
+     */
+    columns: string[];
+    /** 
+     * The data to be displayed in the table. 
+     * For virtualized tables, this is a partial dataset.
+     */
+    rows: Array<TableRow>;
+    /** 
+     * The total number of rows in the dataset, including those not currently loaded.
+     * 
+     * For nested data, only the top level rows are counted.
+     */
+    rowCount: number;
+    /** 
+     * Callback function that is invoked when the visible row range changes due to scrolling.
+     * 
+     * This can be used for lazy loading data.
+     */
+    onRowRangeChange?: (requestedRows: RequestedRows) => void;
+    /** 
+     * Callback function for handling row drag-and-drop reordering.
+     * 
+     * If provided, drag handles will be rendered.
+     */
+    onRowReorder?: (event: RowReorderEvent) => void;
+    /** 
+     * The height of each row in pixels.
+     * @default 20
+     */
+    lineHeight?: number;
+    /** 
+     * The number of rows to render outside the visible viewport to reduce flickering during scrolling.
+     * @default 5
+     */
+    rowVirtualizationMargin?: number;
+    /**
+     * The step size in which the onRowRangeChange callback is invoked.
+     * @default 5
+     */
+    rowVirtualizationStep?: number;
+    /** 
+     * The initial depth to which tree nodes are expanded by default.
+     * - `0` means all nodes are collapsed.
+     * - `1` means root nodes are expanded, etc.
+     * - `undefined` or `Infinity` means all nodes are expanded.
+     */
+    defaultExpansionDepth?: number;
+    /** 
+     * A function to override the default render function for a placeholder row while data is being loaded.
+     */
+    renderSkeletonRow?: () => React.ReactNode;
+    /** 
+     * A custom render function for overriding the default expand/collapse control in tree view.
+     */
+    renderExpander?: (params: RenderExpanderParams<TableRow>) => React.ReactNode;
+  }
