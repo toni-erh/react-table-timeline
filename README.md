@@ -1,6 +1,7 @@
 # React Table + Timeline
 
 🚧 This project is still a work in progress. 🚧 
+
 The core concepts are more or less in place, but many features are not yet complete.  
 Feedback and ideas are very welcome!
 
