@@ -7,6 +7,7 @@ import { TableBody } from './components/TableBody';
 import { ResizeHandle } from './components/ResizeHandle';
 import './Table.css';
 import { RowExpansionProvider } from './context/RowExpansionContext';
+import { TimeLineBody } from "./components/TimeLineBody";
 
 export const Table = <TableRow extends TableRowBase = TableRowBase>({
   columns,
@@ -22,6 +23,8 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   style,
   renderSkeletonRow,
   renderExpander,
+  timeLineItems,
+  renderTimeLineItem,
 }: TableProps<TableRow>) => {
   // Use table expansion hook for tree functionality
   const {
@@ -46,7 +49,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   );
 
   // Use column resize hook
-  const { leftWidth, isResizing, handleMouseDown } = useColumnResize(scrollContainerRef, 300);
+  const { leftWidth, isResizing, startResize } = useColumnResize(scrollContainerRef, 300);
 
   const containerStyle = {
     ...style,
@@ -86,12 +89,17 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
               backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent calc(var(--table-line-height) - var(--table-border-width)), var(--table-border-color) var(--table-border-width), var(--table-border-color) var(--table-line-height))`
             }}
           >
+            <TimeLineBody
+              preparedRows={preparedRows}
+              timeLineItems={timeLineItems}
+              renderTimeLineItem={renderTimeLineItem}
+            />
           </div>
         </div>
         <ResizeHandle
           isResizing={isResizing}
           leftWidth={leftWidth}
-          handleMouseDown={handleMouseDown}
+          startResize={startResize}
         />
       </div>
     </RowExpansionProvider>

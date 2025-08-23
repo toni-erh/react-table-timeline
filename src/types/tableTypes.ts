@@ -5,6 +5,13 @@ export type TableRowBase = {
   children?: TableRowBase[]; 
 }
 
+export type TimeLineItem = {
+    id: string,
+    rowId: string,
+    startTime: number,
+    endTime: number,
+}
+
 export type TableSkeletonRow = { 
   __skeleton_row: true; 
 }
@@ -127,4 +134,12 @@ export interface TableProps<TableRow extends TableRowBase> extends React.HTMLAtt
      * A custom render function for overriding the default expand/collapse control in tree view.
      */
     renderExpander?: (params: RenderExpanderParams<TableRow>) => React.ReactNode;
+    /** 
+     * The time line items to be displayed in the table.
+     */
+    timeLineItems?: TimeLineItem[];
+    /** 
+     * A render function for time line items.
+     */
+    renderTimeLineItem?: (item: TimeLineItem) => React.ReactNode;
   }
