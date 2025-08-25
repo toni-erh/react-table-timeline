@@ -142,4 +142,16 @@ export interface TableProps<TableRow extends TableRowBase> extends React.HTMLAtt
      * A render function for time line items.
      */
     renderTimeLineItem?: (item: TimeLineItem) => React.ReactNode;
+    /** 
+     * The minimum time value for the time line.
+     */
+    minTime?: number,
+    /** 
+     * The maximum time value for the time line.
+     */
+    maxTime?: number,
+    /** 
+     * The initial start time which is visible in the time line.
+     */
+    initialVisibleTime?: number,
   }

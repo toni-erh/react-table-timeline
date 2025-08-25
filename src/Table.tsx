@@ -25,6 +25,9 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   renderExpander,
   timeLineItems,
   renderTimeLineItem,
+  minTime,
+  maxTime,
+  initialVisibleTime,
 }: TableProps<TableRow>) => {
   // Use table expansion hook for tree functionality
   const {
@@ -84,8 +87,6 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
               height: `${(expandedRowCount - firstRenderedIndex) * lineHeight}px`,
               paddingTop: `${firstRenderedIndex * lineHeight}px`,
               width: `calc(100% - ${leftWidth}px)`,
-              overflowX: 'auto',
-              scrollbarWidth: 'none',
               backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent calc(var(--table-line-height) - var(--table-border-width)), var(--table-border-color) var(--table-border-width), var(--table-border-color) var(--table-line-height))`
             }}
           >
@@ -93,6 +94,9 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
               preparedRows={preparedRows}
               timeLineItems={timeLineItems}
               renderTimeLineItem={renderTimeLineItem}
+              minTime={minTime}
+              maxTime={maxTime}
+              initialVisibleTime={initialVisibleTime}
             />
           </div>
         </div>

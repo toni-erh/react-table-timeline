@@ -118,6 +118,9 @@ export default function Playground() {
               {item.id}
             </div>
           )}
+          minTime={-100}
+          maxTime={700}
+          initialVisibleTime={177}
         />
       </div>
     </div>
