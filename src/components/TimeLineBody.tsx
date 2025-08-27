@@ -22,24 +22,62 @@ export const TimeLineBody = ({
     const intMinTime = minTime || timeLineItems.reduce((acc, item) => Math.min(acc, item.startTime), Infinity);
     const intMaxTime = maxTime || timeLineItems.reduce((acc, item) => Math.max(acc, item.endTime), -Infinity);
 
+    const [zoom, setZoom] = React.useState(1);
+
     const preparedTimeLineItems = React.useMemo(() => preparedRows.map(row => {
         if (!isDataRow(row)) return null;
 
         const items = timeLineItems.filter(item => item.rowId === row.id);
         return items.length > 0 ? items : null;
-    }), [preparedRows]);
+    }), [preparedRows, timeLineItems]);
 
     const intInitialVisibleTime = initialVisibleTime || intMinTime;
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
     React.useEffect(() => {
         if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollLeft = intInitialVisibleTime - intMinTime;
+            scrollContainerRef.current.scrollLeft = (intInitialVisibleTime - intMinTime) * zoom;
         }
-    }, [intInitialVisibleTime]);
+    }, []);
+
+    React.useEffect(() => {
+        const el = scrollContainerRef.current;
+        if (!el) return;
+
+        const handler = (e: WheelEvent) => {
+            if (!e.ctrlKey) return;
+            e.preventDefault();
+
+            const container = scrollContainerRef.current;
+            if (!container) return;
+
+            const rect = container.getBoundingClientRect();
+            const cursorX = e.clientX - rect.left;
+            const currentScrollLeft = container.scrollLeft;
+
+            setZoom(zoom => {
+                const timeAtCursor = intMinTime + (currentScrollLeft + cursorX) / zoom;
+
+                const zoomDelta = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+                let newZoom = zoom * zoomDelta;
+                newZoom = Math.max(0.1, Math.min(20, newZoom));
+
+                const newScrollLeft = (timeAtCursor - intMinTime) * newZoom - cursorX;
+                container.scrollLeft = Math.max(0, newScrollLeft);
+
+                return newZoom;
+            });
+        };
+
+        el.addEventListener('wheel', handler);
+        return () => el.removeEventListener('wheel', handler);
+    }, [intMinTime]);
 
     return (
         <div ref={scrollContainerRef} style={{ overflowX: 'auto', scrollbarWidth: 'none', width: '100%', height: '100%' }}>
-            <div style={{ position: 'relative', width: `${intMaxTime - intMinTime}px`, height: '1px' }}>
+            <div
+                style={{ position: 'relative', width: `${(intMaxTime - intMinTime) * zoom}px`, height: '1px' }}
+            >
             {preparedTimeLineItems.map((items, index) => {
                 if (!items) return null;
                 return items.map((item) => (
@@ -47,8 +85,8 @@ export const TimeLineBody = ({
                         key={item.id}
                         style={{
                             position: 'absolute',
-                            left: `${item.startTime - intMinTime}px`,
-                            width: `${item.endTime - item.startTime}px`,
+                            left: `${(item.startTime - intMinTime) * zoom}px`,
+                            width: `${(item.endTime - item.startTime) * zoom}px`,
                             top: `calc(${index} * var(--table-line-height))`,
                             height: `var(--table-line-height)`,
                         }}

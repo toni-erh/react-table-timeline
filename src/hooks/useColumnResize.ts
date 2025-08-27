@@ -3,7 +3,7 @@ import React from 'react';
 export interface UseColumnResizeReturn {
   leftWidth: number;
   isResizing: boolean;
-  startResize: (e: React.MouseEvent | React.TouchEvent) => void;
+  startResize: () => void;
 }
 
 /**
@@ -45,8 +45,7 @@ export function useColumnResize(
     };
   }, [isResizing, scrollContainerRef]);
 
-  const startResize = React.useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
+  const startResize = React.useCallback(() => {
     setIsResizing(true);
   }, []);
 
