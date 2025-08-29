@@ -1,3 +1,14 @@
+export type TableColumn<RowType extends TableRowBase = any> = {
+  field: string;
+  header?: React.ReactNode;
+  width?: number;
+  minWidth?: number;
+  maxWidth?: number;
+  flex?: number;
+  align?: 'left' | 'center' | 'right';
+  renderCell?: (value: any, row: RowType) => React.ReactNode;
+}
+
 export type TableRowBase = {
   // TODO: can we replace this with a firstRowIndex prop in the TableProps?
   index: number;
@@ -39,31 +50,23 @@ export type RequestedRows = {
   rowExpansions: RowExpansions;
 }
 
-// Drag & Drop types
 export type RowReorderPlacement = 'before' | 'after' | 'inside';
 
 export interface RowReorderEvent {
-  // source
   sourceId: string;
   sourceParentId?: string;
   sourcePath: string[];
 
-  // target
   targetId: string;
   targetParentId?: string;
   targetPath: string[];
 
-  // drop intent
   placement: RowReorderPlacement;
 
-  // derived
   newParentId?: string;
-
-  // neighborhood for deterministic placement, independent from indexes
   prevSiblingId?: string;
   nextSiblingId?: string;
 
-  // hints
   isSameParentMove: boolean;
 }
 
@@ -78,14 +81,14 @@ export type RenderExpanderParams<TableRow extends TableRowBase> = {
 export interface TableProps<TableRow extends TableRowBase> extends React.HTMLAttributes<HTMLDivElement> {
     /**
      * The configuration for the table columns.
-     * @example ['Column 1', 'Column 2']
+     * @example [{ field: 'id' }, { field: 'name' }]
      */
-    columns: string[];
+    columns: TableColumn<TableRow>[];
     /**
      * The data to be displayed in the table.
      * For virtualized tables, this is a partial dataset.
      */
-    rows: Array<TableRow>;
+    rows: TableRow[];
     /**
      * The total number of rows in the dataset, including those not currently loaded.
      *

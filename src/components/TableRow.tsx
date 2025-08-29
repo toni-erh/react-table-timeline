@@ -1,12 +1,12 @@
 import React from 'react';
-import type { TableRowBase, RenderExpanderParams, RowReorderEvent, RowReorderPlacement } from '../types/tableTypes';
+import type { TableRowBase, RenderExpanderParams, RowReorderEvent, RowReorderPlacement, TableColumn } from '../types/tableTypes';
 import { TableCell } from './TableCell';
 import { useRowExpansion } from '../context/RowExpansionContext';
 import { computePlacement, prepareRowReorderEvent } from '../utils/dragAndDropUtils';
 
 interface TableRowProps<T extends TableRowBase> {
   row: T;
-  columns: string[];
+  columns: TableColumn<T>[];
   renderExpander?: (params: RenderExpanderParams<T>) => React.ReactNode;
   showDragHandle?: boolean;
   onRowReorder?: (event: RowReorderEvent) => void;
@@ -78,7 +78,7 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
         </div>
       )}
       {columns.map((col, idx) => (
-        <TableCell key={col}>
+        <TableCell column={col} key={col.field}>
           {idx === 0 ? (
             <div style={{ display: 'flex', alignItems: 'center', ['--tree-indent-level' as string]: level }} >
               <div className='table-row-expander'>
@@ -103,10 +103,10 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
                   )
                 )}
               </div>
-              {col in row ? (row[col as keyof typeof row] as React.ReactNode) : null}
+              {col.renderCell ? col.renderCell(row[col.field as keyof typeof row], row) : col.field in row ? (row[col.field as keyof typeof row] as React.ReactNode) : null}
             </div>
           ) : (
-            col in row ? (row[col as keyof typeof row] as React.ReactNode) : null
+            col.renderCell ? col.renderCell(row[col.field as keyof typeof row], row) : col.field in row ? (row[col.field as keyof typeof row] as React.ReactNode) : null
           )}
         </TableCell>
       ))}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Table } from '../src/Table';
+import type { RowReorderEvent, TableColumn, TableRowBase } from '../src/types/tableTypes';
 import './Playground.css';
 
 // Custom Skeleton Row Component for demonstration
@@ -23,10 +24,14 @@ const CustomSkeletonRow = () => (
     />
   </div>
 );
-import type { RowReorderEvent, TableRowBase } from '../src/types/tableTypes';
 
 // Mock Data
-const columns = ['id', 'name', 'age', 'city'];
+const columns: TableColumn<Person>[] = [
+  { field: 'id', header: 'ID', minWidth: 80 },
+  { field: 'name', header: 'Name', flex: 2 },
+  { field: 'age', header: 'Age', maxWidth: 50, align: 'right' },
+  { field: 'city', header: 'City', width: 100, align: 'center', renderCell: (value: string) => <div style={{ backgroundColor: '#1890ff', color: 'white', padding: '3px', margin: '5px', borderRadius: '8px' }}>{value}</div> },
+];
 
 // This interface must be compatible with TableRowBase
 interface Person extends TableRowBase {

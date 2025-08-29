@@ -2,11 +2,11 @@
 import { TableRow } from './TableRow';
 import { SkeletonRow } from './SkeletonRow';
 import { isDataRow } from '../utils/virtualizationUtils';
-import type { PreparedRow, TableRowBase, RenderExpanderParams, RowReorderEvent } from '../types/tableTypes';
+import type { PreparedRow, TableRowBase, RenderExpanderParams, RowReorderEvent, TableColumn } from '../types/tableTypes';
 
 interface TableBodyProps<T extends TableRowBase> {
   preparedRows: PreparedRow<T>[];
-  columns: string[];
+  columns: TableColumn<T>[];
   lineHeight: number;
   renderSkeletonRow?: () => React.ReactNode;
   renderExpander?: (params: RenderExpanderParams<T>) => React.ReactNode;

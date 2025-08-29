@@ -1,7 +1,9 @@
 import React from 'react';
+import type { TableColumn } from '../types/tableTypes';
+import { TableCell } from './TableCell';
 
 interface TableHeaderProps {
-  columns: string[];
+  columns: TableColumn[];
   leftWidth?: number;
   showDragColumn?: boolean;
 }
@@ -13,9 +15,9 @@ export const TableHeader: React.FC<TableHeaderProps> = ({ columns, leftWidth, sh
         <div style={{ width: 20, flex: '0 0 20px' }} aria-hidden />
       )}
       {columns.map((col) => (
-        <div style={{ flex: 1, padding: '0 5px', overflow: 'hidden' }} key={col}>
-          {col}
-        </div>
+        <TableCell column={col} key={col.field}>
+          {col.header || col.field}
+        </TableCell>
       ))}
     </div>
   );

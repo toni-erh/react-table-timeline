@@ -30,7 +30,6 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   maxTime,
   initialVisibleTime,
 }: TableProps<TableRow>) => {
-  // Use table expansion hook for tree functionality
   const {
     rowExpansions,
     setRowExpansions,
@@ -39,7 +38,6 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
     flatRows
   } = useTreeExpansion(rows, rowCount, defaultExpansionDepth);
 
-  // Use virtualization hook
   const { scrollContainerRef, firstRenderedIndex, preparedRows } = useVirtualization(
     flatRows,
     rowCount,
@@ -52,7 +50,6 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
     onRowRangeChange
   );
 
-  // Use column resize hook
   const { leftWidth, isResizing, startResize } = useColumnResize(scrollContainerRef, 300);
 
   const containerStyle = {
