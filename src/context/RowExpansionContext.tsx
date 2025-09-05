@@ -14,11 +14,11 @@ export interface RowExpansionContextValue {
 
 const defaultValue: RowExpansionContextValue = {
   rowExpansions: new Map<string, RowExpansionData>(),
-  setRowExpansions: () => { },
+  setRowExpansions: () => {},
   isExpanded: () => false,
-  toggle: () => { },
-  expand: () => { },
-  collapse: () => { },
+  toggle: () => {},
+  expand: () => {},
+  collapse: () => {},
   getLevel: () => 0,
 };
 
@@ -30,17 +30,18 @@ interface RowExpansionProviderProps {
   children: React.ReactNode;
 }
 
-export function RowExpansionProvider({ rowExpansions, setRowExpansions, children }: RowExpansionProviderProps) {
-  const isExpanded = React.useCallback(
-    (id: string) => !!rowExpansions.get(id)?.isExpanded,
-    [rowExpansions]
-  );
+export function RowExpansionProvider({
+  rowExpansions,
+  setRowExpansions,
+  children,
+}: RowExpansionProviderProps) {
+  const isExpanded = React.useCallback((id: string) => !!rowExpansions.get(id)?.isExpanded, [rowExpansions]);
 
   const toggle = React.useCallback(
     (id: string) => {
       setRowExpansions((prev) => toggleExpansionUtil(prev, id));
     },
-    [setRowExpansions]
+    [setRowExpansions],
   );
 
   const expand = React.useCallback(
@@ -53,7 +54,7 @@ export function RowExpansionProvider({ rowExpansions, setRowExpansions, children
         return next;
       });
     },
-    [setRowExpansions]
+    [setRowExpansions],
   );
 
   const collapse = React.useCallback(
@@ -66,7 +67,7 @@ export function RowExpansionProvider({ rowExpansions, setRowExpansions, children
         return next;
       });
     },
-    [setRowExpansions]
+    [setRowExpansions],
   );
 
   // Compute indentation level on demand using parentId; memoized per rowExpansions reference
@@ -87,21 +88,20 @@ export function RowExpansionProvider({ rowExpansions, setRowExpansions, children
     return compute;
   }, [rowExpansions]);
 
-  const value = React.useMemo<RowExpansionContextValue>(() => ({
-    rowExpansions,
-    setRowExpansions,
-    isExpanded,
-    toggle,
-    expand,
-    collapse,
-    getLevel,
-  }), [rowExpansions, setRowExpansions, isExpanded, toggle, expand, collapse, getLevel]);
-
-  return (
-    <RowExpansionContext.Provider value={value}>
-      {children}
-    </RowExpansionContext.Provider>
+  const value = React.useMemo<RowExpansionContextValue>(
+    () => ({
+      rowExpansions,
+      setRowExpansions,
+      isExpanded,
+      toggle,
+      expand,
+      collapse,
+      getLevel,
+    }),
+    [rowExpansions, setRowExpansions, isExpanded, toggle, expand, collapse, getLevel],
   );
+
+  return <RowExpansionContext.Provider value={value}>{children}</RowExpansionContext.Provider>;
 }
 
 export function useRowExpansion() {

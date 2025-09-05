@@ -11,7 +11,7 @@ export interface UseColumnResizeReturn {
  */
 export function useColumnResize(
   scrollContainerRef: React.RefObject<HTMLDivElement>,
-  initialWidth: number = 300
+  initialWidth: number = 300,
 ): UseColumnResizeReturn {
   const [leftWidth, setLeftWidth] = React.useState(initialWidth);
   const [isResizing, setIsResizing] = React.useState(false);

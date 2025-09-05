@@ -1,9 +1,9 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import Playground from "./Playground";
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import Playground from './Playground';
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Playground />
-  </StrictMode>
+  </StrictMode>,
 );

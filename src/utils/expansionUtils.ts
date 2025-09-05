@@ -6,25 +6,25 @@ import { getExpandedChildCount } from './treeUtils';
  */
 export function calculateExpandedChildCounts(
   rows: TableRowBase[],
-  rowExpansions: RowExpansions
+  rowExpansions: RowExpansions,
 ): ExpandedChildCounts {
   const result: ExpandedChildCounts = [];
-  
+
   rows.forEach((row) => {
     if (!row.children?.length) return;
-    
+
     const expansion = rowExpansions.get(row.id);
     if (!expansion || !expansion.isExpanded) return;
-    
+
     const childCount = getExpandedChildCount(row.children, rowExpansions);
     if (childCount > 0) {
       result.push({
         index: row.index,
-        rowCount: childCount
+        rowCount: childCount,
       });
     }
   });
-  
+
   return result;
 }
 
@@ -34,32 +34,30 @@ export function calculateExpandedChildCounts(
 export function updateExpandedChildCounts(
   prevChildCounts: ExpandedChildCounts,
   rows: TableRowBase[],
-  rowExpansions: RowExpansions
+  rowExpansions: RowExpansions,
 ): ExpandedChildCounts {
   let hasChanged = false;
   const updatedChildCounts: ExpandedChildCounts = [];
   const iterator = prevChildCounts.values();
-  
+
   let next = iterator.next();
-  
+
   // Copy rows that are not in the new list
   while (!next.done && next.value.index < rows[0]?.index) {
     updatedChildCounts.push(next.value);
     next = iterator.next();
   }
-  
+
   // Update rows that are in the new list
   rows.forEach((row) => {
     while (!next.done && next.value.index < row.index) {
       next = iterator.next();
     }
-    
+
     if (row.children?.length) {
       const expansion = rowExpansions.get(row.id);
-      const childCount = expansion?.isExpanded 
-        ? getExpandedChildCount(row.children, rowExpansions)
-        : 0;
-      
+      const childCount = expansion?.isExpanded ? getExpandedChildCount(row.children, rowExpansions) : 0;
+
       // Check if the child count has changed
       if (next.value?.index === row.index) {
         if (next.value.rowCount !== childCount) {
@@ -67,7 +65,7 @@ export function updateExpandedChildCounts(
           if (childCount > 0) {
             updatedChildCounts.push({
               index: row.index,
-              rowCount: childCount
+              rowCount: childCount,
             });
           }
         } else {
@@ -79,7 +77,7 @@ export function updateExpandedChildCounts(
         hasChanged = true;
         updatedChildCounts.push({
           index: row.index,
-          rowCount: childCount
+          rowCount: childCount,
         });
       }
     } else if (next.value?.index === row.index) {
@@ -88,13 +86,13 @@ export function updateExpandedChildCounts(
       next = iterator.next();
     }
   });
-  
+
   // Copy remaining rows that are not in the new list
   while (!next.done) {
     updatedChildCounts.push(next.value);
     next = iterator.next();
   }
-  
+
   return hasChanged ? updatedChildCounts : prevChildCounts;
 }
 
@@ -103,7 +101,7 @@ export function updateExpandedChildCounts(
  */
 export function calculateExpandedRowCount(
   baseRowCount: number,
-  expandedChildCounts: ExpandedChildCounts
+  expandedChildCounts: ExpandedChildCounts,
 ): number {
   return baseRowCount + expandedChildCounts.reduce((pre, cur) => pre + cur.rowCount, 0);
 }

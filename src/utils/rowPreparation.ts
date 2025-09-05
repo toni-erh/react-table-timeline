@@ -9,7 +9,7 @@ export function prepareVirtualizedRows<TableRow extends TableRowBase>(
   firstRealIndex: number,
   offsetToFirstRealIndex: number,
   rowCountToRender: number,
-  expandedChildCounts: ExpandedChildCounts
+  expandedChildCounts: ExpandedChildCounts,
 ): Array<TableRow | TableSkeletonRow> {
   if (rows.length === 0) return [];
 
@@ -22,22 +22,28 @@ export function prepareVirtualizedRows<TableRow extends TableRowBase>(
   if (firstRealIndex === firstIndex) {
     const rowSection: (TableRow | TableSkeletonRow)[] = rows.slice(
       offsetToFirstRealIndex,
-      offsetToFirstRealIndex + rowCountToRender
+      offsetToFirstRealIndex + rowCountToRender,
     );
-    rowSection.push(...Array<TableSkeletonRow>(rowCountToRender - rowSection.length).fill({ __skeleton_row: true }));
+    rowSection.push(
+      ...Array<TableSkeletonRow>(rowCountToRender - rowSection.length).fill({ __skeleton_row: true }),
+    );
     return rowSection;
   }
 
   // Case 2: First index is before real index - calculate offset
   if (firstIndex < firstRealIndex) {
-    const offset = getRowCountInRange(expandedChildCounts, firstIndex, firstRealIndex - 1) + offsetToFirstRealIndex;
+    const offset =
+      getRowCountInRange(expandedChildCounts, firstIndex, firstRealIndex - 1) + offsetToFirstRealIndex;
     const rowSection: (TableRow | TableSkeletonRow)[] = rows.slice(offset, offset + rowCountToRender);
-    rowSection.push(...Array<TableSkeletonRow>(rowCountToRender - rowSection.length).fill({ __skeleton_row: true }));
+    rowSection.push(
+      ...Array<TableSkeletonRow>(rowCountToRender - rowSection.length).fill({ __skeleton_row: true }),
+    );
     return rowSection;
   }
 
   // Case 3: First index is after real index - handle with skeleton rows
-  const offset = getRowCountInRange(expandedChildCounts, firstRealIndex, firstIndex) - 1 - offsetToFirstRealIndex;
+  const offset =
+    getRowCountInRange(expandedChildCounts, firstRealIndex, firstIndex) - 1 - offsetToFirstRealIndex;
 
   if (offset > rowCountToRender) {
     return Array<TableSkeletonRow>(rowCountToRender).fill({ __skeleton_row: true });
@@ -45,11 +51,13 @@ export function prepareVirtualizedRows<TableRow extends TableRowBase>(
 
   const rowSection = [
     ...Array<TableSkeletonRow>(offset).fill({ __skeleton_row: true }),
-    ...rows.slice(0, rowCountToRender - offset)
+    ...rows.slice(0, rowCountToRender - offset),
   ];
 
   if (rowSection.length < rowCountToRender) {
-    rowSection.push(...Array<TableSkeletonRow>(rowCountToRender - rowSection.length).fill({ __skeleton_row: true }));
+    rowSection.push(
+      ...Array<TableSkeletonRow>(rowCountToRender - rowSection.length).fill({ __skeleton_row: true }),
+    );
   }
 
   return rowSection;

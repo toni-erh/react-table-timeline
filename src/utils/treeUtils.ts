@@ -7,12 +7,12 @@ import { areArraysEqual } from './arrayUtils';
 export function generateInitialExpansions(
   rows: TableRowBase[],
   defaultExpansionDepth: number | undefined,
-  parentId: string | undefined = undefined
+  parentId: string | undefined = undefined,
 ): RowExpansions {
   const expansions = new Map<string, RowExpansionData>();
 
   rows.forEach((row, i) => {
-    const childrenIds = row.children?.map(child => child.id) || [];
+    const childrenIds = row.children?.map((child) => child.id) || [];
     const isExpanded = defaultExpansionDepth === undefined || defaultExpansionDepth > 0;
 
     // Add current row's expansion state
@@ -21,7 +21,7 @@ export function generateInitialExpansions(
       childrenIds,
       parentId,
       prevSiblingId: i > 0 ? rows[i - 1].id : undefined,
-      nextSiblingId: i < rows.length - 1 ? rows[i + 1].id : undefined
+      nextSiblingId: i < rows.length - 1 ? rows[i + 1].id : undefined,
     });
 
     // Recursively add children's expansion states if expanded
@@ -29,7 +29,7 @@ export function generateInitialExpansions(
       const childExpansions = generateInitialExpansions(
         row.children,
         defaultExpansionDepth && defaultExpansionDepth - 1,
-        row.id
+        row.id,
       );
 
       // Merge child expansions into the main map
@@ -52,9 +52,14 @@ export function updateExpansions(expansions: RowExpansions, rows: TableRowBase[]
   const newExpansions = new Map(expansions);
   let changed = false;
 
-  const updateOrAdd = (row: TableRowBase, parentId: string | undefined, prevSiblingId: string | undefined, nextSiblingId: string | undefined) => {
+  const updateOrAdd = (
+    row: TableRowBase,
+    parentId: string | undefined,
+    prevSiblingId: string | undefined,
+    nextSiblingId: string | undefined,
+  ) => {
     const expansion = newExpansions.get(row.id);
-    const childrenIds = row.children?.map(child => child.id) || []
+    const childrenIds = row.children?.map((child) => child.id) || [];
     if (expansion) {
       if (expansion.parentId !== parentId || !areArraysEqual(expansion.childrenIds, childrenIds)) {
         newExpansions.set(row.id, {
@@ -70,15 +75,17 @@ export function updateExpansions(expansions: RowExpansions, rows: TableRowBase[]
         childrenIds,
         parentId,
         prevSiblingId,
-        nextSiblingId
+        nextSiblingId,
       });
       changed = true;
     }
-    row.children?.forEach((child, i) => updateOrAdd(child, row.id, row.children?.[i - 1]?.id, row.children?.[i + 1]?.id))
+    row.children?.forEach((child, i) =>
+      updateOrAdd(child, row.id, row.children?.[i - 1]?.id, row.children?.[i + 1]?.id),
+    );
   };
 
   rows.forEach((row, i) => {
-    updateOrAdd(row, undefined, rows[i - 1]?.id, rows[i + 1]?.id)
+    updateOrAdd(row, undefined, rows[i - 1]?.id, rows[i + 1]?.id);
   });
 
   return changed ? newExpansions : expansions;
@@ -87,10 +94,7 @@ export function updateExpansions(expansions: RowExpansions, rows: TableRowBase[]
 /**
  * Calculates the total count of expanded child rows (including the row itself)
  */
-export function getExpandedChildCount(
-  rows: TableRowBase[],
-  expansions: RowExpansions | undefined
-): number {
+export function getExpandedChildCount(rows: TableRowBase[], expansions: RowExpansions | undefined): number {
   if (!expansions) return 0;
 
   return rows.reduce((count, row) => {
@@ -109,10 +113,7 @@ export function getExpandedChildCount(
 /**
  * Flattens a tree row followed by its expanded children into a flat array
  */
-export function flattenExpanded(
-  row: TableRowBase,
-  expansions: RowExpansions | undefined
-): TableRowBase[] {
+export function flattenExpanded(row: TableRowBase, expansions: RowExpansions | undefined): TableRowBase[] {
   if (!expansions) return [row];
 
   const expansion = expansions.get(row.id);
@@ -120,10 +121,7 @@ export function flattenExpanded(
     return [row];
   }
 
-  return [
-    row,
-    ...row.children.flatMap(child => flattenExpanded(child, expansions))
-  ];
+  return [row, ...row.children.flatMap((child) => flattenExpanded(child, expansions))];
 }
 
 export function toggleExpansion(expansions: RowExpansions, rowId: string): RowExpansions {
@@ -132,10 +130,9 @@ export function toggleExpansion(expansions: RowExpansions, rowId: string): RowEx
 
   return new Map(expansions).set(rowId, {
     ...expansion,
-    isExpanded: !expansion.isExpanded
+    isExpanded: !expansion.isExpanded,
   });
 }
-
 
 export function computePath(expansions: RowExpansions, rowId: string): string[] {
   const path: string[] = [];
@@ -146,4 +143,4 @@ export function computePath(expansions: RowExpansions, rowId: string): string[] 
     current = parentId;
   }
   return path.reverse();
-};
+}

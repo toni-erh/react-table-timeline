@@ -30,7 +30,25 @@ const columns: TableColumn<Person>[] = [
   { field: 'id', header: 'ID', minWidth: 80 },
   { field: 'name', header: 'Name', flex: 2 },
   { field: 'age', header: 'Age', maxWidth: 50, align: 'right' },
-  { field: 'city', header: 'City', width: 100, align: 'center', renderCell: (value: string) => <div style={{ backgroundColor: '#1890ff', color: 'white', padding: '3px', margin: '5px', borderRadius: '8px' }}>{value}</div> },
+  {
+    field: 'city',
+    header: 'City',
+    width: 100,
+    align: 'center',
+    renderCell: (value: string) => (
+      <div
+        style={{
+          backgroundColor: '#1890ff',
+          color: 'white',
+          padding: '3px',
+          margin: '5px',
+          borderRadius: '8px',
+        }}
+      >
+        {value}
+      </div>
+    ),
+  },
 ];
 
 // This interface must be compatible with TableRowBase
@@ -74,13 +92,23 @@ export default function Playground() {
 
   const handleRowReorder = ({ sourceId, sourcePath, targetId, targetPath, placement }: RowReorderEvent) => {
     const newRows = structuredClone(loadedRows);
-    const sourceParent = sourcePath.slice(0, sourcePath.length - 1).reduce((acc, id) => acc?.[acc?.findIndex(row => row.id === id)]?.children, newRows as TableRowBase[] | undefined);
+    const sourceParent = sourcePath
+      .slice(0, sourcePath.length - 1)
+      .reduce(
+        (acc, id) => acc?.[acc?.findIndex((row) => row.id === id)]?.children,
+        newRows as TableRowBase[] | undefined,
+      );
     if (!sourceParent) return;
-    const sourceIndex = sourceParent.findIndex(row => row.id === sourceId);
+    const sourceIndex = sourceParent.findIndex((row) => row.id === sourceId);
     const source = sourceParent.splice(sourceIndex, 1)[0];
 
-    const targetParentChildren = targetPath.slice(0, targetPath.length - 1).reduce((acc, id) => acc?.[acc?.findIndex(row => row.id === id)]?.children, newRows as TableRowBase[] | undefined);
-    const targetIndex = targetParentChildren?.findIndex(row => row.id === targetId);
+    const targetParentChildren = targetPath
+      .slice(0, targetPath.length - 1)
+      .reduce(
+        (acc, id) => acc?.[acc?.findIndex((row) => row.id === id)]?.children,
+        newRows as TableRowBase[] | undefined,
+      );
+    const targetIndex = targetParentChildren?.findIndex((row) => row.id === targetId);
     if (!targetParentChildren || targetIndex === undefined) return;
     if (placement === 'inside') {
       if (targetParentChildren[targetIndex].children) {
@@ -102,9 +130,7 @@ export default function Playground() {
     <div className={`playground-container ${themeClass}`}>
       <h1>React Table Playground</h1>
       <div className="playground-controls">
-        <button onClick={() => setIsDark(!isDark)}>
-          Toggle Dark Mode
-        </button>
+        <button onClick={() => setIsDark(!isDark)}>Toggle Dark Mode</button>
       </div>
       <div className="table-wrapper">
         <Table<Person>

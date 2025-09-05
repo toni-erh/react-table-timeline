@@ -1,5 +1,11 @@
 import React from 'react';
-import type { TableRowBase, RenderExpanderParams, RowReorderEvent, RowReorderPlacement, TableColumn } from '../types/tableTypes';
+import type {
+  TableRowBase,
+  RenderExpanderParams,
+  RowReorderEvent,
+  RowReorderPlacement,
+  TableColumn,
+} from '../types/tableTypes';
 import { TableCell } from './TableCell';
 import { useRowExpansion } from '../context/RowExpansionContext';
 import { computePlacement, prepareRowReorderEvent } from '../utils/dragAndDropUtils';
@@ -12,7 +18,13 @@ interface TableRowProps<T extends TableRowBase> {
   onRowReorder?: (event: RowReorderEvent) => void;
 }
 
-export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander, showDragHandle, onRowReorder }: TableRowProps<T>) => {
+export const TableRow = <T extends TableRowBase>({
+  row,
+  columns,
+  renderExpander,
+  showDragHandle,
+  onRowReorder,
+}: TableRowProps<T>) => {
   const { isExpanded, toggle, getLevel, rowExpansions } = useRowExpansion();
   const hasChildren = !!row.children?.length;
   const level = getLevel(row.id);
@@ -56,11 +68,11 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
   }, [dragOverPlacement]);
 
   return (
-    <div 
-      className="table-row" 
-      onDrop={handleDrop} 
-      onDragOver={handleDragOver} 
-      onDragLeave={handleDragLeave} 
+    <div
+      className="table-row"
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
       {...indicatorDataAttrs}
     >
       {showDragHandle && (
@@ -80,10 +92,10 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
       {columns.map((col, idx) => (
         <TableCell column={col} key={col.field}>
           {idx === 0 ? (
-            <div style={{ display: 'flex', alignItems: 'center', ['--tree-indent-level' as string]: level }} >
-              <div className='table-row-expander'>
-                {hasChildren && (
-                  renderExpander ? (
+            <div style={{ display: 'flex', alignItems: 'center', ['--tree-indent-level' as string]: level }}>
+              <div className="table-row-expander">
+                {hasChildren &&
+                  (renderExpander ? (
                     renderExpander({
                       expanded: isExpanded(row.id),
                       hasChildren,
@@ -94,20 +106,28 @@ export const TableRow = <T extends TableRowBase>({ row, columns, renderExpander,
                   ) : (
                     <button
                       type="button"
-                      className='table-row-expander-button'
+                      className="table-row-expander-button"
                       aria-label={isExpanded(row.id) ? 'Collapse row' : 'Expand row'}
-                      onClick={(e) => { e.stopPropagation(); toggle(row.id); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggle(row.id);
+                      }}
                     >
                       {isExpanded(row.id) ? '▾' : '▸'}
                     </button>
-                  )
-                )}
+                  ))}
               </div>
-              {col.renderCell ? col.renderCell(row[col.field as keyof typeof row], row) : col.field in row ? (row[col.field as keyof typeof row] as React.ReactNode) : null}
+              {col.renderCell
+                ? col.renderCell(row[col.field as keyof typeof row], row)
+                : col.field in row
+                  ? (row[col.field as keyof typeof row] as React.ReactNode)
+                  : null}
             </div>
-          ) : (
-            col.renderCell ? col.renderCell(row[col.field as keyof typeof row], row) : col.field in row ? (row[col.field as keyof typeof row] as React.ReactNode) : null
-          )}
+          ) : col.renderCell ? (
+            col.renderCell(row[col.field as keyof typeof row], row)
+          ) : col.field in row ? (
+            (row[col.field as keyof typeof row] as React.ReactNode)
+          ) : null}
         </TableCell>
       ))}
     </div>

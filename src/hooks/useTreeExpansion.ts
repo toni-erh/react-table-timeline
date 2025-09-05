@@ -1,7 +1,11 @@
 import React from 'react';
 import type { TableRowBase, RowExpansions, ExpandedChildCounts } from '../types/tableTypes';
 import { generateInitialExpansions, flattenExpanded, updateExpansions } from '../utils/treeUtils';
-import { updateExpandedChildCounts, calculateExpandedRowCount, calculateExpandedChildCounts } from '../utils/expansionUtils';
+import {
+  updateExpandedChildCounts,
+  calculateExpandedRowCount,
+  calculateExpandedChildCounts,
+} from '../utils/expansionUtils';
 
 interface UseTreeExpansionReturn<TableRow extends TableRowBase> {
   rowExpansions: RowExpansions;
@@ -17,16 +21,16 @@ interface UseTreeExpansionReturn<TableRow extends TableRowBase> {
 export function useTreeExpansion<TableRow extends TableRowBase>(
   rows: TableRow[],
   rowCount: number,
-  defaultExpansionDepth?: number
+  defaultExpansionDepth?: number,
 ): UseTreeExpansionReturn<TableRow> {
   // For tracking which rows are expanded
   const [rowExpansions, setRowExpansions] = React.useState<RowExpansions>(() =>
-    generateInitialExpansions(rows, defaultExpansionDepth)
+    generateInitialExpansions(rows, defaultExpansionDepth),
   );
 
   // For easy counting of rows before and after visible rows
   const [expandedChildCounts, setExpandedChildCounts] = React.useState<ExpandedChildCounts>(() =>
-    calculateExpandedChildCounts(rows, rowExpansions)
+    calculateExpandedChildCounts(rows, rowExpansions),
   );
 
   React.useEffect(() => {
@@ -35,17 +39,18 @@ export function useTreeExpansion<TableRow extends TableRowBase>(
 
   React.useEffect(() => {
     setExpandedChildCounts((prev) => updateExpandedChildCounts(prev, rows, rowExpansions));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rowExpansions]);
 
   const expandedRowCount = React.useMemo(
     () => calculateExpandedRowCount(rowCount, expandedChildCounts),
-    [rowCount, expandedChildCounts]
+    [rowCount, expandedChildCounts],
   );
 
   // flattens the rows with expanded children
   const flatRows = React.useMemo(
     () => rows.flatMap((row) => flattenExpanded(row, rowExpansions)),
-    [rows, rowExpansions]
+    [rows, rowExpansions],
   );
 
   return {
@@ -53,6 +58,6 @@ export function useTreeExpansion<TableRow extends TableRowBase>(
     setRowExpansions,
     expandedChildCounts,
     expandedRowCount,
-    flatRows: flatRows as TableRow[]
+    flatRows: flatRows as TableRow[],
   };
 }

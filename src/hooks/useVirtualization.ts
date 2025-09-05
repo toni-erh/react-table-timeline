@@ -4,11 +4,9 @@ import type {
   TableSkeletonRow,
   ExpandedChildCounts,
   RowExpansions,
-  RequestedRows
+  RequestedRows,
 } from '../types/tableTypes';
-import {
-  getFirstLevelIndexAndOffset
-} from '../utils/virtualizationUtils';
+import { getFirstLevelIndexAndOffset } from '../utils/virtualizationUtils';
 import { calculateVisibleRowRange } from '../utils/scrollCalculations';
 import { prepareVirtualizedRows } from '../utils/rowPreparation';
 
@@ -30,7 +28,7 @@ export function useVirtualization<TableRow extends TableRowBase>(
   rowVirtualizationStep: number,
   expandedChildCounts: ExpandedChildCounts,
   rowExpansions: RowExpansions,
-  onRowRangeChange?: (requestedRows: RequestedRows) => void
+  onRowRangeChange?: (requestedRows: RequestedRows) => void,
 ): UseVirtualizationReturn<TableRow> {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -68,6 +66,7 @@ export function useVirtualization<TableRow extends TableRowBase>(
     return () => {
       container.removeEventListener('scroll', handleScroll);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lineHeight]);
 
   React.useEffect(() => {
@@ -78,7 +77,7 @@ export function useVirtualization<TableRow extends TableRowBase>(
       containerClientHeight,
       lineHeight,
       rowVirtualizationMargin,
-      flatRowCount
+      flatRowCount,
     );
 
     if (firstRenderedIndex === firstFlatIndex && rowCountToRender === newRowCountToRender) return;
@@ -87,7 +86,7 @@ export function useVirtualization<TableRow extends TableRowBase>(
       firstFlatIndex,
       expandedChildCounts,
       newRowCountToRender,
-      rowCount
+      rowCount,
     );
 
     setFirstRenderedIndex(firstFlatIndex);
@@ -95,6 +94,7 @@ export function useVirtualization<TableRow extends TableRowBase>(
     setFirstRealIndex(initialFirstRealIndex);
     setLastRealIndex(initialLastRealIndex);
     setOffsetToFirstRealIndex(initialOffset);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lineHeight, rowVirtualizationMargin, flatRowCount, containerScrollTop, containerClientHeight]);
 
   // Notify parent about the range of rows to render
@@ -108,11 +108,16 @@ export function useVirtualization<TableRow extends TableRowBase>(
       firstLevelRowCount: lastRealIndex - firstRealIndex + 1,
       rowExpansions,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firstRealIndex, lastRealIndex]);
 
   // Prepare rows to render
   const preparedRows: (TableRow | TableSkeletonRow)[] = React.useMemo(() => {
-    if (offsetToFirstRealIndex === undefined || rowCountToRender === undefined || firstRealIndex === undefined) {
+    if (
+      offsetToFirstRealIndex === undefined ||
+      rowCountToRender === undefined ||
+      firstRealIndex === undefined
+    ) {
       return [];
     }
     return prepareVirtualizedRows(
@@ -120,13 +125,13 @@ export function useVirtualization<TableRow extends TableRowBase>(
       firstRealIndex,
       offsetToFirstRealIndex,
       rowCountToRender,
-      expandedChildCounts
+      expandedChildCounts,
     );
   }, [rows, firstRealIndex, rowCountToRender, offsetToFirstRealIndex, expandedChildCounts]);
 
   return {
     scrollContainerRef,
     firstRenderedIndex,
-    preparedRows
+    preparedRows,
   };
 }

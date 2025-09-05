@@ -6,7 +6,7 @@ export function calculateVisibleRowRange(
   clientHeight: number,
   lineHeight: number,
   rowVirtualizationMargin: number,
-  flatRowCount: number
+  flatRowCount: number,
 ): {
   firstFlatIndex: number;
   lastFlatIndex: number;
@@ -16,13 +16,13 @@ export function calculateVisibleRowRange(
   const firstFlatIndex = Math.max(virtualFirstFlatIndex, 0);
   const lastFlatIndex = Math.min(
     virtualFirstFlatIndex + Math.ceil(clientHeight / lineHeight) + 2 * rowVirtualizationMargin - 1,
-    flatRowCount - 1
+    flatRowCount - 1,
   );
   const rowCountToRender = lastFlatIndex - firstFlatIndex + 1;
 
   return {
     firstFlatIndex,
     lastFlatIndex,
-    rowCountToRender
+    rowCountToRender,
   };
 }
