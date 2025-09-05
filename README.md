@@ -1,8 +1,8 @@
 # React Table + Timeline
 
-🚧 This project is still a work in progress. 🚧 
+🚧 This project is still a work in progress. 🚧
 
-The core concepts are more or less in place, but many features are not yet complete.  
+The core concepts are more or less in place, but many features are not yet complete.
 Feedback and ideas are very welcome!
 
 This should become a performant, highly customizable, and react-friendly table component with optional timeline support, built with TypeScript. It's designed to handle large datasets with ease, supporting virtualization and lazy loading, while not being tied to any specific data management solution.
@@ -25,20 +25,19 @@ Here's a simple example of how to use the `Table` component:
 ```tsx
 const columns = ['name', 'type', 'size'];
 const data = [
-  { id: '1', index: 0, name: 'Folder 1', type: 'folder', size: '100KB', children: [
-    { id: '2', index: 0, name: 'File 1.txt', type: 'text file', size: '100KB' },
-  ] },
+  {
+    id: '1',
+    index: 0,
+    name: 'Folder 1',
+    type: 'folder',
+    size: '100KB',
+    children: [{ id: '2', index: 0, name: 'File 1.txt', type: 'text file', size: '100KB' }],
+  },
   { id: '3', index: 1, name: 'File 2.png', type: 'image file', size: '16MB' },
 ];
 
 const App = () => {
-  return (
-    <Table
-      columns={columns}
-      rows={data}
-      rowCount={data.length}
-    />
-  );
+  return <Table columns={columns} rows={data} rowCount={data.length} />;
 };
 ```
 
@@ -46,19 +45,19 @@ const App = () => {
 
 The `Table` component accepts the following props:
 
-| Prop                      | Type                                                  | Default | Description                                                                                             |
-| ------------------------- | ----------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------- |
-| `columns`                 | `string[]`                                            | -       | The configuration for the table columns. Example: `['Column 1', 'Column 2']`                              |
-| `rows`                    | `Array<TableRow>`                                     | -       | The data to be displayed. For virtualized tables, this is a partial dataset.                            |
-| `rowCount`                | `number`                                              | -       | The total number of rows in the dataset, including those not currently loaded.                          |
-| `onRowRangeChange`        | `((requestedRows: RequestedRows) => void)` \| `undefined` | -       | Callback invoked when the visible row range changes. Used for lazy loading.                             |
-| `onRowReorder`            | `((event: RowReorderEvent) => void)` \| `undefined`     | -       | Callback for handling row drag-and-drop reordering. If provided, drag handles are rendered.             |
-| `lineHeight`              | `number`                                              | `20`    | The height of each row in pixels.                                                                       |
-| `rowVirtualizationMargin` | `number`                                              | `5`     | The number of rows to render outside the visible viewport to reduce flickering during scrolling.        |
-| `rowVirtualizationStep`   | `number`                                              | `5`     | The number of rows to fetch in each lazy loading request.                                               |
-| `defaultExpansionDepth`   | `number` \| `undefined`                               | -       | The initial depth to which tree nodes are expanded. `0` = collapsed, `undefined` = all expanded.       |
-| `renderSkeletonRow`       | `(() => React.ReactNode)` \| `undefined`                 | -       | A function to render a placeholder row while data is loading.                                           |
-| `renderExpander`          | `((params: RenderExpanderParams) => React.ReactNode)` \| `undefined` | -       | A custom render function for the expand/collapse control in tree view.                                  |
+| Prop                      | Type                                                                 | Default | Description                                                                                      |
+| ------------------------- | -------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------ |
+| `columns`                 | `string[]`                                                           | -       | The configuration for the table columns. Example: `['Column 1', 'Column 2']`                     |
+| `rows`                    | `Array<TableRow>`                                                    | -       | The data to be displayed. For virtualized tables, this is a partial dataset.                     |
+| `rowCount`                | `number`                                                             | -       | The total number of rows in the dataset, including those not currently loaded.                   |
+| `onRowRangeChange`        | `((requestedRows: RequestedRows) => void)` \| `undefined`            | -       | Callback invoked when the visible row range changes. Used for lazy loading.                      |
+| `onRowReorder`            | `((event: RowReorderEvent) => void)` \| `undefined`                  | -       | Callback for handling row drag-and-drop reordering. If provided, drag handles are rendered.      |
+| `lineHeight`              | `number`                                                             | `20`    | The height of each row in pixels.                                                                |
+| `rowVirtualizationMargin` | `number`                                                             | `5`     | The number of rows to render outside the visible viewport to reduce flickering during scrolling. |
+| `rowVirtualizationStep`   | `number`                                                             | `5`     | The number of rows to fetch in each lazy loading request.                                        |
+| `defaultExpansionDepth`   | `number` \| `undefined`                                              | -       | The initial depth to which tree nodes are expanded. `0` = collapsed, `undefined` = all expanded. |
+| `renderSkeletonRow`       | `(() => React.ReactNode)` \| `undefined`                             | -       | A function to render a placeholder row while data is loading.                                    |
+| `renderExpander`          | `((params: RenderExpanderParams) => React.ReactNode)` \| `undefined` | -       | A custom render function for the expand/collapse control in tree view.                           |
 
 ## Data Types
 
@@ -78,10 +77,11 @@ type TableRowBase = {
 
   // An optional array of child rows for creating a tree structure.
   children?: TableRowBase[];
-}
+};
 ```
 
 You can extend this type with any custom properties your application needs:
+
 ```typescript
 interface MyDataRow extends TableRowBase {
   name: string;
@@ -104,7 +104,7 @@ type RequestedRows = {
   firstLevelRowCount: number;
   // A map containing the expansion state of all currently known rows.
   rowExpansions: Map<string, RowExpansionData>;
-}
+};
 ```
 
 ### `RowReorderEvent`
@@ -124,7 +124,7 @@ interface RowReorderEvent {
   sourceParentId?: string;
   sourcePath: string[];
   targetParentId?: string;
-  targetPath:string[];
+  targetPath: string[];
 
   // Derived information for convenience.
   newParentId?: string;
@@ -152,7 +152,7 @@ type RenderExpanderParams = {
   level: number;
   // The data for the current row.
   row: TableRow;
-}
+};
 ```
 
 ## Theming & Styling
