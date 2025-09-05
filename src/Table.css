@@ -10,6 +10,11 @@
   --table-resize-handle-color: #ddd;
   --table-resize-handle-active-color: #aaa;
 
+  /* Selection colors */
+  --table-row-selected-bg: #e6f7ff;
+  --table-row-selected-border-color: #1890ff;
+  --table-row-selected-text-color: #333;
+
   --table-cell-padding: 0 5px;
   --table-font-family: sans-serif;
   --table-font-size: 14px;
@@ -47,6 +52,16 @@
 
 .table-row:hover {
   background-color: var(--table-row-hover-bg);
+}
+
+.table-row--selected {
+  background-color: var(--table-row-selected-bg);
+  border-left: 3px solid var(--table-row-selected-border-color);
+  color: var(--table-row-selected-text-color);
+}
+
+.table-row--selected:hover {
+  background-color: var(--table-row-selected-bg);
 }
 
 .table-row::before,

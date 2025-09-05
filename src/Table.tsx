@@ -2,12 +2,14 @@ import type { TableRowBase, TableProps } from './types/tableTypes';
 import { useColumnResize } from './hooks/useColumnResize';
 import { useTreeExpansion } from './hooks/useTreeExpansion';
 import { useVirtualization } from './hooks/useVirtualization';
+import { useRowSelection } from './hooks/useRowSelection';
 import { TableHeader } from './components/TableHeader';
 import { TableBody } from './components/TableBody';
 import { ResizeHandle } from './components/ResizeHandle';
 import './Table.css';
 import { RowExpansionProvider } from './context/RowExpansionContext';
 import { TimeLineBody } from './components/TimeLineBody';
+import { RowSelectionProvider } from './context/RowSelectionContext';
 
 export const Table = <TableRow extends TableRowBase = TableRowBase>({
   columns,
@@ -29,6 +31,10 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   minTime,
   maxTime,
   initialVisibleTime,
+  selectionMode = 'none',
+  selectedRows,
+  defaultSelectedRows,
+  onSelectionChange,
 }: TableProps<TableRow>) => {
   const { rowExpansions, setRowExpansions, expandedChildCounts, expandedRowCount, flatRows } =
     useTreeExpansion(rows, rowCount, defaultExpansionDepth);
@@ -47,6 +53,15 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
 
   const { leftWidth, isResizing, startResize } = useColumnResize(scrollContainerRef, 300);
 
+  const {
+    selectedRows: currentSelectedRows,
+    selectRow,
+    deselectRow,
+    toggleRow,
+    clearSelection,
+    isSelected,
+  } = useRowSelection(selectionMode, selectedRows, defaultSelectedRows, onSelectionChange);
+
   const containerStyle = {
     ...style,
     '--table-line-height': `${lineHeight}px`,
@@ -54,60 +69,70 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
 
   return (
     <RowExpansionProvider rowExpansions={rowExpansions} setRowExpansions={setRowExpansions}>
-      <div className={`table-container ${className || ''}`} style={containerStyle}>
-        <TableHeader
-          columns={columns}
-          leftWidth={showTimeLine ? leftWidth : undefined}
-          showDragColumn={!!onRowReorder}
-        />
-        <div
-          ref={scrollContainerRef}
-          style={{ overflowY: 'auto', height: `calc(100% - ${lineHeight}px)`, display: 'flex' }}
-        >
+      <RowSelectionProvider
+        selectionMode={selectionMode}
+        selectedRows={currentSelectedRows}
+        selectRow={selectRow}
+        deselectRow={deselectRow}
+        toggleRow={toggleRow}
+        clearSelection={clearSelection}
+        isSelected={isSelected}
+      >
+        <div className={`table-container ${className || ''}`} style={containerStyle}>
+          <TableHeader
+            columns={columns}
+            leftWidth={showTimeLine ? leftWidth : undefined}
+            showDragColumn={!!onRowReorder}
+          />
           <div
-            style={{
-              height: `${(expandedRowCount - firstRenderedIndex) * lineHeight}px`,
-              paddingTop: `${firstRenderedIndex * lineHeight}px`,
-              width: showTimeLine ? leftWidth : '100%',
-              minWidth: showTimeLine ? 50 : undefined,
-              maxWidth: showTimeLine ? 800 : undefined,
-              backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent calc(var(--table-line-height) - var(--table-border-width)), var(--table-border-color) var(--table-border-width), var(--table-border-color) var(--table-line-height))`,
-            }}
+            ref={scrollContainerRef}
+            style={{ overflowY: 'auto', height: `calc(100% - ${lineHeight}px)`, display: 'flex' }}
           >
-            <TableBody
-              preparedRows={preparedRows}
-              columns={columns}
-              lineHeight={lineHeight}
-              renderSkeletonRow={renderSkeletonRow}
-              renderExpander={renderExpander}
-              showDragHandle={!!onRowReorder}
-              onRowReorder={onRowReorder}
-            />
-          </div>
-          {showTimeLine && (
             <div
               style={{
                 height: `${(expandedRowCount - firstRenderedIndex) * lineHeight}px`,
                 paddingTop: `${firstRenderedIndex * lineHeight}px`,
-                width: `calc(100% - ${leftWidth}px)`,
+                width: showTimeLine ? leftWidth : '100%',
+                minWidth: showTimeLine ? 50 : undefined,
+                maxWidth: showTimeLine ? 800 : undefined,
                 backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent calc(var(--table-line-height) - var(--table-border-width)), var(--table-border-color) var(--table-border-width), var(--table-border-color) var(--table-line-height))`,
               }}
             >
-              <TimeLineBody
+              <TableBody
                 preparedRows={preparedRows}
-                timeLineItems={timeLineItems}
-                renderTimeLineItem={renderTimeLineItem}
-                minTime={minTime}
-                maxTime={maxTime}
-                initialVisibleTime={initialVisibleTime}
+                columns={columns}
+                lineHeight={lineHeight}
+                renderSkeletonRow={renderSkeletonRow}
+                renderExpander={renderExpander}
+                showDragHandle={!!onRowReorder}
+                onRowReorder={onRowReorder}
               />
             </div>
+            {showTimeLine && (
+              <div
+                style={{
+                  height: `${(expandedRowCount - firstRenderedIndex) * lineHeight}px`,
+                  paddingTop: `${firstRenderedIndex * lineHeight}px`,
+                  width: `calc(100% - ${leftWidth}px)`,
+                  backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent calc(var(--table-line-height) - var(--table-border-width)), var(--table-border-color) var(--table-border-width), var(--table-border-color) var(--table-line-height))`,
+                }}
+              >
+                <TimeLineBody
+                  preparedRows={preparedRows}
+                  timeLineItems={timeLineItems}
+                  renderTimeLineItem={renderTimeLineItem}
+                  minTime={minTime}
+                  maxTime={maxTime}
+                  initialVisibleTime={initialVisibleTime}
+                />
+              </div>
+            )}
+          </div>
+          {showTimeLine && (
+            <ResizeHandle isResizing={isResizing} leftWidth={leftWidth} startResize={startResize} />
           )}
         </div>
-        {showTimeLine && (
-          <ResizeHandle isResizing={isResizing} leftWidth={leftWidth} startResize={startResize} />
-        )}
-      </div>
+      </RowSelectionProvider>
     </RowExpansionProvider>
   );
 };

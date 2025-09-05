@@ -50,6 +50,16 @@ export type RequestedRows = {
   rowExpansions: RowExpansions;
 };
 
+export type RowSelectionMode = 'single' | 'multiple' | 'none';
+
+export type RowSelectionState = Set<string>;
+
+export interface RowSelectionChangeEvent {
+  selectedRows: Set<string>;
+  changedRow: string;
+  action: 'select' | 'deselect';
+}
+
 export type RowReorderPlacement = 'before' | 'after' | 'inside';
 
 export interface RowReorderEvent {
@@ -161,4 +171,26 @@ export interface TableProps<TableRow extends TableRowBase> extends React.HTMLAtt
    * The initial start time which is visible in the time line.
    */
   initialVisibleTime?: number,
+  /**
+   * The selection mode for the table rows.
+   * - 'none': No selection allowed
+   * - 'single': Only one row can be selected at a time
+   * - 'multiple': Multiple rows can be selected
+   * @default 'none'
+   */
+  selectionMode?: RowSelectionMode;
+  /**
+   * The currently selected row IDs (controlled mode).
+   * When provided, the component is in controlled mode.
+   */
+  selectedRows?: Set<string>;
+  /**
+   * The initial selected row IDs (uncontrolled mode).
+   * Used when the component is in uncontrolled mode.
+   */
+  defaultSelectedRows?: Set<string>;
+  /**
+   * Callback function invoked when the selection changes.
+   */
+  onSelectionChange?: (event: RowSelectionChangeEvent) => void;
 }

@@ -8,6 +8,7 @@ import type {
 } from '../types/tableTypes';
 import { TableCell } from './TableCell';
 import { useRowExpansion } from '../context/RowExpansionContext';
+import { useRowSelectionContext } from '../context/RowSelectionContext';
 import { computePlacement, prepareRowReorderEvent } from '../utils/dragAndDropUtils';
 
 interface TableRowProps<T extends TableRowBase> {
@@ -18,7 +19,7 @@ interface TableRowProps<T extends TableRowBase> {
   onRowReorder?: (event: RowReorderEvent) => void;
 }
 
-export const TableRow = <T extends TableRowBase>({
+export const TableRowComponent = <T extends TableRowBase>({
   row,
   columns,
   renderExpander,
@@ -26,6 +27,7 @@ export const TableRow = <T extends TableRowBase>({
   onRowReorder,
 }: TableRowProps<T>) => {
   const { isExpanded, toggle, getLevel, rowExpansions } = useRowExpansion();
+  const { selectionMode, isSelected, toggleRow } = useRowSelectionContext();
   const hasChildren = !!row.children?.length;
   const level = getLevel(row.id);
 
@@ -56,6 +58,38 @@ export const TableRow = <T extends TableRowBase>({
     setDragOverPlacement(null);
   };
 
+  const handleRowClick = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      // Don't handle selection if drag is in progress
+      if (e.defaultPrevented) return;
+
+      // Don't handle selection for drag handle clicks
+      if ((e.target as HTMLElement)?.closest('.table-row-drag-handle')) return;
+
+      // Don't handle selection for expander button clicks
+      if ((e.target as HTMLElement)?.closest('.table-row-expander-button')) return;
+
+      if (selectionMode === 'none') return;
+
+      // Handle Ctrl/Cmd + click for multi-select
+      if (e.ctrlKey || e.metaKey) {
+        toggleRow(row.id);
+      } else {
+        // Regular click - select this row (single mode will replace, multi mode will select)
+        toggleRow(row.id);
+      }
+    },
+    [selectionMode, toggleRow, row.id],
+  );
+
+  const rowClassName = React.useMemo(() => {
+    const classes = ['table-row'];
+    if (isSelected(row.id)) {
+      classes.push('table-row--selected');
+    }
+    return classes.join(' ');
+  }, [isSelected, row.id]);
+
   const indicatorDataAttrs = React.useMemo(() => {
     if (!dragOverPlacement) {
       return {
@@ -69,7 +103,8 @@ export const TableRow = <T extends TableRowBase>({
 
   return (
     <div
-      className="table-row"
+      className={rowClassName}
+      onClick={handleRowClick}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -133,3 +168,5 @@ export const TableRow = <T extends TableRowBase>({
     </div>
   );
 };
+
+export const TableRow = React.memo(TableRowComponent);

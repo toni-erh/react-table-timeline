@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { Table } from '../src/Table';
-import type { RowReorderEvent, TableColumn, TableRowBase } from '../src/types/tableTypes';
+import type {
+  RowReorderEvent,
+  TableColumn,
+  TableRowBase,
+  RowSelectionChangeEvent,
+} from '../src/types/tableTypes';
 import './Playground.css';
 
 // Custom Skeleton Row Component for demonstration
@@ -90,6 +95,11 @@ export default function Playground() {
 
   const [loadedRows, setLoadedRows] = useState<typeof rows>(rows);
 
+  // Selection state
+  const [selectionMode, setSelectionMode] = useState<'single' | 'multiple' | 'none'>('multiple');
+  const [controlledSelectedRows, setControlledSelectedRows] = useState<Set<string>>(new Set());
+  const [isControlled, setIsControlled] = useState(false);
+
   const handleRowReorder = ({ sourceId, sourcePath, targetId, targetPath, placement }: RowReorderEvent) => {
     const newRows = structuredClone(loadedRows);
     const sourceParent = sourcePath
@@ -124,6 +134,19 @@ export default function Playground() {
     setLoadedRows(newRows);
   };
 
+  const handleSelectionChange = (event: RowSelectionChangeEvent) => {
+    console.log('Selection changed:', event);
+    if (isControlled) {
+      setControlledSelectedRows(event.selectedRows);
+    }
+  };
+
+  const clearSelection = () => {
+    if (isControlled) {
+      setControlledSelectedRows(new Set());
+    }
+  };
+
   const themeClass = isDark ? 'dark-theme' : '';
 
   return (
@@ -131,6 +154,32 @@ export default function Playground() {
       <h1>React Table Playground</h1>
       <div className="playground-controls">
         <button onClick={() => setIsDark(!isDark)}>Toggle Dark Mode</button>
+
+        <div style={{ marginTop: '10px' }}>
+          <label>
+            Selection Mode:
+            <select value={selectionMode} onChange={(e) => setSelectionMode(e.target.value as any)}>
+              <option value="none">None</option>
+              <option value="single">Single</option>
+              <option value="multiple">Multiple</option>
+            </select>
+          </label>
+
+          <label style={{ marginLeft: '20px' }}>
+            <input
+              type="checkbox"
+              checked={isControlled}
+              onChange={(e) => setIsControlled(e.target.checked)}
+            />
+            Controlled Mode
+          </label>
+
+          {isControlled && (
+            <button onClick={clearSelection} style={{ marginLeft: '20px' }}>
+              Clear Selection ({controlledSelectedRows.size} selected)
+            </button>
+          )}
+        </div>
       </div>
       <div className="table-wrapper">
         <Table<Person>
@@ -153,6 +202,11 @@ export default function Playground() {
           minTime={-100}
           maxTime={700}
           initialVisibleTime={177}
+          selectionMode={selectionMode}
+          {...(isControlled && {
+            selectedRows: controlledSelectedRows,
+            onSelectionChange: handleSelectionChange,
+          })}
         />
       </div>
     </div>

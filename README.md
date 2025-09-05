@@ -14,6 +14,7 @@ This should become a performant, highly customizable, and react-friendly table c
 - **Tree Data Support**: Natively displays hierarchical data with expand/collapse functionality.
 - **Lazy Loading**: Efficiently loads data on demand as the user scrolls, perfect for very large or remote datasets.
 - **Drag & Drop Reordering**: Supports reordering of rows within the table.
+- **Row Selection**: Supports single, multiple, or no row selection with both controlled and uncontrolled modes.
 - **Customizable Rendering**: Use custom render functions for maximum flexibility.
 - **Theming**: Use CSS variables for easy theming.
 - **TypeScript**: Written entirely in TypeScript for a great developer experience with strong type safety.
@@ -41,6 +42,77 @@ const App = () => {
 };
 ```
 
+## Row Selection
+
+The table component supports row selection in three modes: `'none'`, `'single'`, and `'multiple'`. Selection can be used in both controlled and uncontrolled modes.
+
+### Uncontrolled Mode (Default)
+
+In uncontrolled mode, the table manages its own selection state internally:
+
+```tsx
+const App = () => {
+  return (
+    <Table
+      columns={columns}
+      rows={data}
+      rowCount={data.length}
+      selectionMode="multiple"
+      defaultSelectedRows={new Set(['1', '3'])} // Optional initial selection
+    />
+  );
+};
+```
+
+### Controlled Mode
+
+In controlled mode, you manage the selection state externally:
+
+```tsx
+const App = () => {
+  const [selectedRows, setSelectedRows] = useState(new Set<string>());
+
+  const handleSelectionChange = (event) => {
+    console.log('Selected rows:', event.selectedRows);
+    setSelectedRows(event.selectedRows);
+  };
+
+  return (
+    <Table
+      columns={columns}
+      rows={data}
+      rowCount={data.length}
+      selectionMode="multiple"
+      selectedRows={selectedRows}
+      onSelectionChange={handleSelectionChange}
+    />
+  );
+};
+```
+
+### Selection Modes
+
+- **`'none'`**: No selection allowed (default)
+- **`'single'`**: Only one row can be selected at a time
+- **`'multiple'`**: Multiple rows can be selected
+
+### Selection Events
+
+The `onSelectionChange` callback receives a `RowSelectionChangeEvent`:
+
+```typescript
+interface RowSelectionChangeEvent {
+  selectedRows: Set<string>;    // All currently selected row IDs
+  changedRow: string;          // The row ID that triggered the change
+  action: 'select' | 'deselect'; // What happened to the changed row
+}
+```
+
+### Keyboard Shortcuts
+
+- **Click**: Select/deselect a row
+- **Ctrl/Cmd + Click**: Toggle row selection (multi-select mode only)
+
 ## API - Component Props
 
 The `Table` component accepts the following props:
@@ -58,6 +130,10 @@ The `Table` component accepts the following props:
 | `defaultExpansionDepth`   | `number` \| `undefined`                                              | -       | The initial depth to which tree nodes are expanded. `0` = collapsed, `undefined` = all expanded. |
 | `renderSkeletonRow`       | `(() => React.ReactNode)` \| `undefined`                             | -       | A function to render a placeholder row while data is loading.                                    |
 | `renderExpander`          | `((params: RenderExpanderParams) => React.ReactNode)` \| `undefined` | -       | A custom render function for the expand/collapse control in tree view.                           |
+| `selectionMode`           | `'single' \| 'multiple' \| 'none'`                                   | `'none'`| The row selection mode. `'none'` disables selection, `'single'` allows one row, `'multiple'` allows many. |
+| `selectedRows`            | `Set<string>` \| `undefined`                                         | -       | The currently selected row IDs (controlled mode).                                                |
+| `defaultSelectedRows`     | `Set<string>` \| `undefined`                                         | -       | The initial selected row IDs (uncontrolled mode).                                                |
+| `onSelectionChange`       | `((event: RowSelectionChangeEvent) => void)` \| `undefined`          | -       | Callback invoked when the selection changes.                                                     |
 
 ## Data Types
 
