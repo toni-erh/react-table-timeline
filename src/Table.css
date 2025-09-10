@@ -76,9 +76,11 @@
   opacity: 0;
   transition: opacity 0.1s ease;
 }
+
 .table-row::before {
   top: -1px;
 }
+
 .table-row::after {
   bottom: -2px;
 }
@@ -87,10 +89,12 @@
   top: -1px;
   opacity: 1;
 }
+
 .table-row[data-drop-placement="after"]::after {
   bottom: -2px;
   opacity: 1;
 }
+
 .table-row[data-drop-placement="inside"]::after {
   bottom: -2px;
   left: 24px;
@@ -131,7 +135,6 @@
 }
 
 .table-cell {
-  flex: 1;
   overflow: hidden;
   padding: var(--table-cell-padding);
 }

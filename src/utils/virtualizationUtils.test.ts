@@ -35,7 +35,7 @@ describe('virtualizationUtils', () => {
 
     it('should handle empty range', () => {
       const result = getRowCountInRange(mockExpandedChildCounts, 5, 5);
-      expect(result).toBe(1);
+      expect(result).toBe(3);
     });
 
     it('should handle range with no expanded children', () => {

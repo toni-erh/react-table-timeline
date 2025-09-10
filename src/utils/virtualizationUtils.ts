@@ -115,8 +115,6 @@ export function getRowCountInRange(
   firstIndex: number,
   lastIndex: number,
 ): number {
-  if (firstIndex === lastIndex) return 1;
-
   const childrenInRange = expandedChildCounts.reduce((pre, cur) => {
     if (cur.index >= firstIndex && cur.index <= lastIndex) {
       return pre + cur.rowCount;

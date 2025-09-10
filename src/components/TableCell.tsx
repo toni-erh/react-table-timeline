@@ -7,8 +7,6 @@ const generateCellStyle = (col: TableColumn) => {
     width: col.width || 'auto',
     minWidth: col.minWidth || 'auto',
     maxWidth: col.maxWidth || 'auto',
-    padding: '0px',
-    overflow: 'hidden',
     textAlign: col.align || 'left',
   };
 };

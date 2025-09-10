@@ -43,7 +43,7 @@ export function prepareVirtualizedRows<TableRow extends TableRowBase>(
 
   // Case 3: First index is after real index - handle with skeleton rows
   const offset =
-    getRowCountInRange(expandedChildCounts, firstRealIndex, firstIndex) - 1 - offsetToFirstRealIndex;
+    getRowCountInRange(expandedChildCounts, firstRealIndex, firstIndex - 1) - offsetToFirstRealIndex;
 
   if (offset > rowCountToRender) {
     return Array<TableSkeletonRow>(rowCountToRender).fill({ __skeleton_row: true });
