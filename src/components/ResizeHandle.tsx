@@ -3,17 +3,18 @@ import React from 'react';
 interface ResizeHandleProps {
   isResizing: boolean;
   leftWidth: number;
-  handleMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void;
+  startResize: (e: React.MouseEvent | React.TouchEvent) => void;
 }
 
-export const ResizeHandle: React.FC<ResizeHandleProps> = ({ isResizing, leftWidth, handleMouseDown }) => {
+export const ResizeHandle: React.FC<ResizeHandleProps> = ({ isResizing, leftWidth, startResize }) => {
   const className = `resize-handle ${isResizing ? 'is-resizing' : ''}`;
 
   return (
     <div
       className={className}
       style={{ left: leftWidth - 3, height: '100%' }}
-      onMouseDown={handleMouseDown}
+      onMouseDown={startResize}
+      onTouchStart={startResize}
     />
   );
 };

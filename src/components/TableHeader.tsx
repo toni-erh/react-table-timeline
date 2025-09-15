@@ -2,7 +2,7 @@ import React from 'react';
 
 interface TableHeaderProps {
   columns: string[];
-  leftWidth: number;
+  leftWidth?: number;
   showDragColumn?: boolean;
 }
 

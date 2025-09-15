@@ -55,6 +55,13 @@ const generateData = (count: number, depth: number, parentId: string = ''): Pers
 
 const rows = generateData(100, 1);
 
+const timeLineItems = [
+  { id: '0', rowId: '1', startTime: 0, endTime: 100 },
+  { id: '1', rowId: '2', startTime: 100, endTime: 200 },
+  { id: '2', rowId: '4', startTime: 190, endTime: 250 },
+  { id: '3', rowId: '2', startTime: 250, endTime: 300 },
+];
+
 export default function Playground() {
   const [isDark, setIsDark] = useState(false);
 
@@ -105,6 +112,16 @@ export default function Playground() {
           rowVirtualizationMargin={0}
           renderSkeletonRow={CustomSkeletonRow}
           onRowReorder={handleRowReorder}
+          showTimeLine={true}
+          timeLineItems={timeLineItems}
+          renderTimeLineItem={(item) => (
+            <div style={{ width: '100%', height: '100%', backgroundColor: 'lightblue' }}>
+              {item.id}
+            </div>
+          )}
+          minTime={-100}
+          maxTime={700}
+          initialVisibleTime={177}
         />
       </div>
     </div>
