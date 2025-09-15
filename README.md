@@ -108,11 +108,6 @@ interface RowSelectionChangeEvent {
 }
 ```
 
-### Keyboard Shortcuts
-
-- **Click**: Select/deselect a row
-- **Ctrl/Cmd + Click**: Toggle row selection (multi-select mode only)
-
 ## API - Component Props
 
 The `Table` component accepts the following props:

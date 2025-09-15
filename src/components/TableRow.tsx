@@ -19,7 +19,7 @@ interface TableRowProps<T extends TableRowBase> {
   onRowReorder?: (event: RowReorderEvent) => void;
 }
 
-export const TableRowComponent = <T extends TableRowBase>({
+export const TableRow = <T extends TableRowBase>({
   row,
   columns,
   renderExpander,
@@ -71,13 +71,7 @@ export const TableRowComponent = <T extends TableRowBase>({
 
       if (selectionMode === 'none') return;
 
-      // Handle Ctrl/Cmd + click for multi-select
-      if (e.ctrlKey || e.metaKey) {
-        toggleRow(row.id);
-      } else {
-        // Regular click - select this row (single mode will replace, multi mode will select)
-        toggleRow(row.id);
-      }
+      toggleRow(row.id);
     },
     [selectionMode, toggleRow, row.id],
   );
@@ -168,5 +162,3 @@ export const TableRowComponent = <T extends TableRowBase>({
     </div>
   );
 };
-
-export const TableRow = React.memo(TableRowComponent);

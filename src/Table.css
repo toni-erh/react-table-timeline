@@ -56,7 +56,7 @@
 
 .table-row--selected {
   background-color: var(--table-row-selected-bg);
-  border-left: 3px solid var(--table-row-selected-border-color);
+  /* border-left: 3px solid var(--table-row-selected-border-color); */
   color: var(--table-row-selected-text-color);
 }
 
