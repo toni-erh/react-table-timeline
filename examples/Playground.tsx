@@ -112,6 +112,7 @@ export default function Playground() {
           rowVirtualizationMargin={0}
           renderSkeletonRow={CustomSkeletonRow}
           onRowReorder={handleRowReorder}
+          showTimeLine={true}
           timeLineItems={timeLineItems}
           renderTimeLineItem={(item) => (
             <div style={{ width: '100%', height: '100%', backgroundColor: 'lightblue' }}>

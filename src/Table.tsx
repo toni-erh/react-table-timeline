@@ -23,6 +23,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   style,
   renderSkeletonRow,
   renderExpander,
+  showTimeLine,
   timeLineItems,
   renderTimeLineItem,
   minTime,
@@ -62,14 +63,14 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   return (
     <RowExpansionProvider rowExpansions={rowExpansions} setRowExpansions={setRowExpansions}>
       <div className={`table-container ${className || ''}`} style={containerStyle}>
-        <TableHeader columns={columns} leftWidth={leftWidth} showDragColumn={!!onRowReorder} />
+        <TableHeader columns={columns} leftWidth={showTimeLine ? leftWidth : undefined} showDragColumn={!!onRowReorder} />
         <div ref={scrollContainerRef} style={{ overflowY: 'auto', height: `calc(100% - ${lineHeight}px)`, display: 'flex' }}>
           <div style={{
             height: `${(expandedRowCount - firstRenderedIndex) * lineHeight}px`,
             paddingTop: `${firstRenderedIndex * lineHeight}px`,
-            width: leftWidth,
-            minWidth: 50,
-            maxWidth: 800,
+            width: showTimeLine ? leftWidth : '100%',
+            minWidth: showTimeLine ? 50 : undefined,
+            maxWidth: showTimeLine ? 800 : undefined,
             backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent calc(var(--table-line-height) - var(--table-border-width)), var(--table-border-color) var(--table-border-width), var(--table-border-color) var(--table-line-height))`
           }}>
             <TableBody
@@ -82,7 +83,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
               onRowReorder={onRowReorder}
             />
           </div>
-          <div
+          {showTimeLine && <div
             style={{
               height: `${(expandedRowCount - firstRenderedIndex) * lineHeight}px`,
               paddingTop: `${firstRenderedIndex * lineHeight}px`,
@@ -98,13 +99,13 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
               maxTime={maxTime}
               initialVisibleTime={initialVisibleTime}
             />
-          </div>
+          </div>}
         </div>
-        <ResizeHandle
+        {showTimeLine && <ResizeHandle
           isResizing={isResizing}
           leftWidth={leftWidth}
           startResize={startResize}
-        />
+        />}
       </div>
     </RowExpansionProvider>
   );
