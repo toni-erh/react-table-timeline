@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { Table } from '../src/Table';
 import type {
