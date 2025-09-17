@@ -14,18 +14,18 @@ export type TableRowBase = {
   index: number;
   id: string;
   children?: TableRowBase[];
-}
+};
 
 export type TimeLineItem = {
-    id: string,
-    rowId: string,
-    startTime: number,
-    endTime: number,
-}
+  id: string;
+  rowId: string;
+  startTime: number;
+  endTime: number;
+};
 
 export type TableSkeletonRow = {
   __skeleton_row: true;
-}
+};
 
 export type PreparedRow<TableRow extends TableRowBase> = TableRow | TableSkeletonRow;
 
@@ -41,7 +41,7 @@ export type RowExpansions = Map<string, RowExpansionData>;
 export type ExpandedChildCounts = {
   index: number;
   rowCount: number;
-}[]
+}[];
 
 export type RequestedRows = {
   firstFirstLevelIndex: number;
@@ -162,15 +162,15 @@ export interface TableProps<TableRow extends TableRowBase> extends React.HTMLAtt
   /**
    * The minimum time value for the time line.
    */
-  minTime?: number,
+  minTime?: number;
   /**
    * The maximum time value for the time line.
    */
-  maxTime?: number,
+  maxTime?: number;
   /**
    * The initial start time which is visible in the time line.
    */
-  initialVisibleTime?: number,
+  initialVisibleTime?: number;
   /**
    * The selection mode for the table rows.
    * - 'none': No selection allowed

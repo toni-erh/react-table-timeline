@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Table } from '../src/Table';
 import type {
   RowReorderEvent,
@@ -196,9 +195,7 @@ export default function Playground() {
           showTimeLine={true}
           timeLineItems={timeLineItems}
           renderTimeLineItem={(item) => (
-            <div style={{ width: '100%', height: '100%', backgroundColor: 'lightblue' }}>
-              {item.id}
-            </div>
+            <div style={{ width: '100%', height: '100%', backgroundColor: 'lightblue' }}>{item.id}</div>
           )}
           minTime={-100}
           maxTime={700}
@@ -212,4 +209,4 @@ export default function Playground() {
       </div>
     </div>
   );
-};
+}

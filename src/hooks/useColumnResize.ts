@@ -52,6 +52,6 @@ export function useColumnResize(
   return {
     leftWidth,
     isResizing,
-    startResize
+    startResize,
   };
 }
