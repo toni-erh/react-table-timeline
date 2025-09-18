@@ -39,7 +39,10 @@
   border-bottom: var(--table-border-width) solid var(--table-border-color);
   height: var(--table-line-height);
   box-sizing: border-box;
-  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.table-body-wrapper {
   scrollbar-width: none;
 }
 

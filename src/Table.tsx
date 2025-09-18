@@ -3,6 +3,7 @@ import { useColumnResize } from './hooks/useColumnResize';
 import { useTreeExpansion } from './hooks/useTreeExpansion';
 import { useVirtualization } from './hooks/useVirtualization';
 import { useRowSelection } from './hooks/useRowSelection';
+import { useScrollSync } from './hooks/useScrollSync';
 import { TableHeader } from './components/TableHeader';
 import { TableBody } from './components/TableBody';
 import { ResizeHandle } from './components/ResizeHandle';
@@ -62,6 +63,8 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
     isSelected,
   } = useRowSelection(selectionMode, selectedRows, defaultSelectedRows, onSelectionChange);
 
+  const { headerRef, bodyRef } = useScrollSync();
+
   const containerStyle = {
     ...style,
     '--table-line-height': `${lineHeight}px`,
@@ -83,12 +86,15 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
             columns={columns}
             leftWidth={showTimeLine ? leftWidth : undefined}
             showDragColumn={!!onRowReorder}
+            scrollRef={headerRef}
           />
           <div
             ref={scrollContainerRef}
             style={{ overflowY: 'auto', height: `calc(100% - ${lineHeight}px)`, display: 'flex' }}
           >
             <div
+              ref={bodyRef}
+              className="table-body-wrapper"
               style={{
                 height: `${expandedRowCount * lineHeight}px`,
                 paddingTop: `${firstRenderedIndex * lineHeight}px`,
@@ -111,7 +117,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
             {showTimeLine && (
               <div
                 style={{
-                  height: `${(expandedRowCount - firstRenderedIndex) * lineHeight}px`,
+                  height: `${expandedRowCount * lineHeight}px`,
                   paddingTop: `${firstRenderedIndex * lineHeight}px`,
                   width: `calc(100% - ${leftWidth}px)`,
                   backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent calc(var(--table-line-height) - var(--table-border-width)), var(--table-border-color) var(--table-border-width), var(--table-border-color) var(--table-line-height))`,
