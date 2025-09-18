@@ -39,6 +39,8 @@
   border-bottom: var(--table-border-width) solid var(--table-border-color);
   height: var(--table-line-height);
   box-sizing: border-box;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
 
 .table-row {
@@ -105,6 +107,7 @@
   cursor: grab;
   user-select: none;
   -webkit-user-drag: element;
+  min-width: 20px;
   width: 20px;
   height: 100%;
   display: flex;
@@ -137,6 +140,7 @@
 .table-cell {
   overflow: hidden;
   padding: var(--table-cell-padding);
+  min-width: 30px;
 }
 
 .skeleton-row {

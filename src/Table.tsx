@@ -95,6 +95,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
                 width: showTimeLine ? leftWidth : '100%',
                 minWidth: showTimeLine ? 50 : undefined,
                 backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent calc(var(--table-line-height) - var(--table-border-width)), var(--table-border-color) var(--table-border-width), var(--table-border-color) var(--table-line-height))`,
+                overflowY: 'auto',
               }}
             >
               <TableBody

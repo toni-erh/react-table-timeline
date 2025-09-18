@@ -5,8 +5,8 @@ const generateCellStyle = (col: TableColumn) => {
   return {
     flex: col.width === undefined ? col.flex || 1 : undefined,
     width: col.width || 'auto',
-    minWidth: col.minWidth || 'auto',
-    maxWidth: col.maxWidth || 'auto',
+    minWidth: col.minWidth,
+    maxWidth: col.maxWidth,
     textAlign: col.align || 'left',
   };
 };
