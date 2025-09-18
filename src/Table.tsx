@@ -98,6 +98,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
               style={{
                 height: `${expandedRowCount * lineHeight}px`,
                 paddingTop: `${firstRenderedIndex * lineHeight}px`,
+                boxSizing: 'border-box',
                 width: showTimeLine ? leftWidth : '100%',
                 minWidth: showTimeLine ? 50 : undefined,
                 backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent calc(var(--table-line-height) - var(--table-border-width)), var(--table-border-color) var(--table-border-width), var(--table-border-color) var(--table-line-height))`,
@@ -119,6 +120,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
                 style={{
                   height: `${expandedRowCount * lineHeight}px`,
                   paddingTop: `${firstRenderedIndex * lineHeight}px`,
+                  boxSizing: 'border-box',
                   width: `calc(100% - ${leftWidth}px)`,
                   backgroundImage: `repeating-linear-gradient(to bottom, transparent, transparent calc(var(--table-line-height) - var(--table-border-width)), var(--table-border-color) var(--table-border-width), var(--table-border-color) var(--table-line-height))`,
                 }}
