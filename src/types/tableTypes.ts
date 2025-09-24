@@ -118,6 +118,16 @@ export interface TableProps<TableRow extends TableRowBase> extends React.HTMLAtt
    */
   onRowReorder?: (event: RowReorderEvent) => void;
   /**
+   * Width of the drag handle column in pixels.
+   * @default 20
+   */
+  dragHandleWidth?: number;
+  /**
+   * Default minimum width for columns without explicit width/minWidth.
+   * @default 30
+   */
+  defaultMinColumnWidth?: number;
+  /**
    * The height of each row in pixels.
    * @default 20
    */

@@ -110,8 +110,8 @@
   cursor: grab;
   user-select: none;
   -webkit-user-drag: element;
-  min-width: 20px;
-  width: 20px;
+  min-width: var(--drag-handle-width);
+  width: var(--drag-handle-width);
   height: 100%;
   display: flex;
   align-items: center;

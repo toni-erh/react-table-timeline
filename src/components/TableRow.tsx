@@ -17,6 +17,7 @@ interface TableRowProps<T extends TableRowBase> {
   renderExpander?: (params: RenderExpanderParams<T>) => React.ReactNode;
   showDragHandle?: boolean;
   onRowReorder?: (event: RowReorderEvent) => void;
+  minRowWidth: number;
 }
 
 export const TableRow = <T extends TableRowBase>({
@@ -25,6 +26,7 @@ export const TableRow = <T extends TableRowBase>({
   renderExpander,
   showDragHandle,
   onRowReorder,
+  minRowWidth,
 }: TableRowProps<T>) => {
   const { isExpanded, toggle, getLevel, rowExpansions } = useRowExpansion();
   const { selectionMode, isSelected, toggleRow } = useRowSelectionContext();
@@ -102,6 +104,7 @@ export const TableRow = <T extends TableRowBase>({
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
+      style={{ minWidth: `${minRowWidth}px` }}
       {...indicatorDataAttrs}
     >
       {showDragHandle && (

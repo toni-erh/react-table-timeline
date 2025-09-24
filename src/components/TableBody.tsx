@@ -1,6 +1,8 @@
+import React from 'react';
 import { TableRow } from './TableRow';
 import { SkeletonRow } from './SkeletonRow';
 import { isDataRow } from '../utils/virtualizationUtils';
+import { calculateMinimumRowWidth } from '../utils/columnUtils';
 import type {
   PreparedRow,
   TableRowBase,
@@ -17,6 +19,8 @@ interface TableBodyProps<T extends TableRowBase> {
   renderExpander?: (params: RenderExpanderParams<T>) => React.ReactNode;
   showDragHandle?: boolean;
   onRowReorder?: (event: RowReorderEvent) => void;
+  dragHandleWidth: number;
+  defaultMinColumnWidth: number;
 }
 
 export const TableBody = <T extends TableRowBase>({
@@ -27,7 +31,16 @@ export const TableBody = <T extends TableRowBase>({
   renderExpander,
   showDragHandle,
   onRowReorder,
+  dragHandleWidth,
+  defaultMinColumnWidth,
 }: TableBodyProps<T>) => {
+  const minRowWidth = React.useMemo(() => {
+    return calculateMinimumRowWidth(columns, !!showDragHandle, {
+      dragHandleWidth,
+      defaultMinColumnWidth,
+    });
+  }, [columns, showDragHandle, dragHandleWidth, defaultMinColumnWidth]);
+
   return (
     <>
       {preparedRows.map((row, index) =>
@@ -39,13 +52,14 @@ export const TableBody = <T extends TableRowBase>({
             renderExpander={renderExpander}
             showDragHandle={!!showDragHandle}
             onRowReorder={onRowReorder}
+            minRowWidth={minRowWidth}
           />
         ) : renderSkeletonRow ? (
-          <div key={`skeleton_${index}`} style={{ height: `${lineHeight}px` }}>
+          <div key={`skeleton_${index}`} style={{ height: `${lineHeight}px`, minWidth: `${minRowWidth}px` }}>
             {renderSkeletonRow()}
           </div>
         ) : (
-          <SkeletonRow key={`skeleton_${index}`} lineHeight={lineHeight} />
+          <SkeletonRow key={`skeleton_${index}`} lineHeight={lineHeight} minWidth={minRowWidth} />
         ),
       )}
     </>

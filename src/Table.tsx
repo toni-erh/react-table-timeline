@@ -18,6 +18,8 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   rowCount,
   onRowRangeChange,
   onRowReorder,
+  dragHandleWidth = 20,
+  defaultMinColumnWidth = 30,
   lineHeight = 20,
   rowVirtualizationMargin = 5,
   rowVirtualizationStep = 5,
@@ -68,6 +70,7 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
   const containerStyle = {
     ...style,
     '--table-line-height': `${lineHeight}px`,
+    '--drag-handle-width': `${dragHandleWidth}px`,
   };
 
   return (
@@ -113,6 +116,8 @@ export const Table = <TableRow extends TableRowBase = TableRowBase>({
                 renderExpander={renderExpander}
                 showDragHandle={!!onRowReorder}
                 onRowReorder={onRowReorder}
+                dragHandleWidth={dragHandleWidth}
+                defaultMinColumnWidth={defaultMinColumnWidth}
               />
             </div>
             {showTimeLine && (
